@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>생애설계 진단 안내 | 세컨라이프 디자인</title>
+<style>
+  :root{
+    --mint-l:#EAF7F1;
+    --mint-m:#CDEEDF;
+    --mint-s:#A8DFC7;
+    --mint:#6FC0AE;
+    --mint-deep:#3E8F7D;
+    --cream:#F4FBF7;
+    --ink:#233A32;
+    --ink-soft:#748A81;
+    --line:#DCEEE5;
+    --gold:#F2B84B;
+    --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    background:linear-gradient(160deg, var(--mint-l) 0%, var(--mint-m) 55%, var(--mint-s) 100%);
+    min-height:100vh;
+    display:flex;flex-direction:column;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3{font-family:var(--font);font-weight:700;letter-spacing:-0.01em;}
+  a{text-decoration:none;color:inherit;}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:20px 24px 4px;max-width:640px;margin:0 auto;width:100%;
+  }
+  .back-btn{
+    width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.7);
+    display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--mint-deep);flex:none;
+  }
+  .home-btn{
+    height:44px;padding:0 16px;border-radius:999px;background:var(--mint-deep);
+    display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:800;color:#fff;flex:none;
+    box-shadow:0 8px 18px rgba(62,143,125,0.30);white-space:nowrap;
+  }
+  @media (max-width:480px){ .home-btn .home-text{display:none;} .home-btn{padding:0;width:44px;justify-content:center;} }
+
+  .stage{
+    flex:1;display:flex;align-items:center;justify-content:center;padding:16px 24px 40px;
+  }
+  .intro-card{
+    background:#fff;border-radius:28px;max-width:480px;width:100%;
+    padding:38px 30px 32px;
+    box-shadow:0 24px 50px rgba(62,143,125,0.18);
+  }
+  .intro-icon{
+    width:64px;height:64px;border-radius:20px;background:var(--mint-l);
+    display:flex;align-items:center;justify-content:center;font-size:30px;
+    margin-bottom:20px;
+  }
+  .intro-kicker{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--mint-l);color:var(--mint-deep);font-size:12.5px;font-weight:800;
+    padding:6px 14px;border-radius:999px;margin-bottom:14px;
+  }
+  .intro-title{font-size:26px;line-height:1.35;margin-bottom:10px;color:var(--ink);}
+  .intro-lead{font-size:15px;color:var(--ink-soft);margin-bottom:26px;line-height:1.65;}
+
+  .meta-row{display:flex;gap:10px;margin-bottom:26px;}
+  .meta-item{flex:1;background:var(--cream);border-radius:16px;padding:14px 10px;text-align:center;}
+  .meta-item .meta-num{font-family:var(--font);font-size:19px;color:var(--mint-deep);font-weight:800;}
+  .meta-item .meta-label{font-size:12.5px;color:var(--ink-soft);font-weight:700;margin-top:3px;}
+
+  .info-block{margin-bottom:14px;}
+  .info-block h4{font-size:15.5px;color:var(--ink);margin-bottom:10px;}
+  .info-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+  .info-list li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;color:var(--ink-soft);line-height:1.55;}
+  .info-list li .dot{
+    flex:none;width:20px;height:20px;border-radius:50%;background:var(--mint-l);color:var(--mint-deep);
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-top:1px;
+  }
+
+  .domain-row{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+  .domain-chip{
+    flex:1;min-width:calc(50% - 4px);background:var(--mint-l);border-radius:12px;
+    padding:10px 12px;text-align:center;font-size:13px;font-weight:800;color:var(--mint-deep);
+  }
+
+  .privacy-note{
+    background:#FFF3E9;border-radius:14px;padding:14px 16px;
+    font-size:13.5px;color:#8A5B23;line-height:1.6;margin-bottom:26px;
+  }
+
+  .start-btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--mint-deep);color:#fff;font-size:16.5px;font-weight:800;
+    padding:16px 0;min-height:52px;border-radius:999px;width:100%;
+    box-shadow:0 14px 30px rgba(62,143,125,0.30);
+  }
+  .skip-row{text-align:center;margin-top:14px;font-size:13.5px;color:var(--ink-soft);font-weight:700;}
+
+  @media (max-width:520px){
+    .intro-card{padding:30px 24px 26px;border-radius:24px;}
+    .intro-title{font-size:21px;}
+    .meta-row{flex-wrap:wrap;}
+    .meta-item{min-width:calc(33% - 8px);}
+  }
+  .site-footer{text-align:center;font-size:11px;color:#748A81;padding:14px 12px calc(14px + env(safe-area-inset-bottom));flex:none;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="back-btn" aria-label="랜딩페이지로 돌아가기">←</a>
+  <a class="home-btn" href="index.html" aria-label="홈으로">🏠 <span class="home-text">홈으로 가기</span></a>
+</div>
+
+<div class="stage">
+  <div class="intro-card">
+    <span class="intro-kicker">🧭 균형 잡힌 삶</span>
+    <div class="intro-icon">🧭</div>
+    <h2 class="intro-title">생애설계 진단</h2>
+    <p class="intro-lead">커리어·경제·건강·관계·여가·가정 6개 영역에 대해 '만족도'와 '중요도'를 함께 답하면, 지금 가장 신경 써야 할 영역을 짚어드립니다.</p>
+
+    <div class="meta-row">
+      <div class="meta-item"><div class="meta-num">30</div><div class="meta-label">문항 수</div></div>
+      <div class="meta-item"><div class="meta-num">5~10분</div><div class="meta-label">소요 시간</div></div>
+      <div class="meta-item"><div class="meta-num">즉시</div><div class="meta-label">결과 확인</div></div>
+    </div>
+
+    <div class="domain-row">
+      <div class="domain-chip">💼 커리어·사회참여</div>
+      <div class="domain-chip">💰 경제·자산</div>
+      <div class="domain-chip">💪 건강·활력</div>
+      <div class="domain-chip">🤝 관계·사회</div>
+      <div class="domain-chip">🎨 여가·성장·의미</div>
+      <div class="domain-chip">🏠 가정</div>
+    </div>
+
+    <div class="info-block">
+      <h4>이런 것을 확인할 수 있어요</h4>
+      <ul class="info-list">
+        <li><span class="dot">✓</span>6개 영역별 만족도 점수 (영역당 50점 만점)</li>
+        <li><span class="dot">✓</span>내가 중요하게 여기지만 채워지지 않은 영역</li>
+        <li><span class="dot">✓</span>지금 가장 먼저 신경 써야 할 우선순위 영역</li>
+      </ul>
+    </div>
+
+    <div class="privacy-note">
+      ⓘ 문항마다 <b>"만족도"</b>와 <b>"중요도"</b> 두 가지를 각각 0~10점으로 답하시면 됩니다(총 30문항, 응답 60개). 정답이 없는 자가진단이며, 답변은 결과 계산에만 사용되고 저장되지 않습니다.
+    </div>
+
+    <a href="lifedesign-quiz.html" class="start-btn">진단 시작하기 →</a>
+    <div class="skip-row">회원가입 없이 바로 진행돼요</div>
+  </div>
+</div>
+
+<div class="site-footer">© 2026 세컨라이프 디자인. JMCARER. All rights reserved.</div>
+
+</body>
+</html>

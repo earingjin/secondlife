@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>생애설계 진단 | 세컨라이프 디자인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --mint-l:#EAF7F1;
+    --mint-m:#CDEEDF;
+    --mint-s:#A8DFC7;
+    --mint:#6FC0AE;
+    --mint-deep:#3E8F7D;
+    --cream:#F4FBF7;
+    --ink:#233A32;
+    --ink-soft:#748A81;
+    --line:#DCEEE5;
+    --gold:#F2B84B;
+    --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    background:linear-gradient(160deg, var(--mint-l) 0%, var(--mint-m) 55%, var(--mint-s) 100%);
+    min-height:100vh;
+    display:flex;flex-direction:column;
+    -webkit-font-smoothing:antialiased;
+  }
+  h2{font-family:var(--font);font-weight:700;letter-spacing:-0.01em;}
+  a,button{text-decoration:none;color:inherit;font-family:var(--font);}
+
+  .topbar{
+    display:flex;align-items:center;gap:14px;
+    padding:20px 24px 0;max-width:640px;margin:0 auto;width:100%;
+  }
+  .back-btn{
+    width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.7);
+    display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--mint-deep);flex:none;
+    border:none;cursor:pointer;transition:opacity .15s ease;
+  }
+  .home-btn{
+    height:44px;padding:0 16px;border-radius:999px;background:var(--mint-deep);
+    display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:800;color:#fff;flex:none;
+    border:none;cursor:pointer;box-shadow:0 8px 18px rgba(62,143,125,0.30);white-space:nowrap;
+  }
+  @media (max-width:480px){ .home-btn .home-text{display:none;} .home-btn{padding:0;width:44px;justify-content:center;} }
+  .back-btn.disabled{opacity:0.35;pointer-events:none;}
+  .progress-track{flex:1;height:8px;background:rgba(255,255,255,0.6);border-radius:999px;overflow:hidden;}
+  .progress-fill{height:100%;width:0%;background:var(--mint-deep);border-radius:999px;transition:width .3s ease;}
+  .q-count{font-size:14px;font-weight:800;color:#3D5A4E;flex:none;min-width:52px;text-align:right;}
+
+  .domain-row{
+    max-width:640px;margin:0 auto;width:100%;
+    padding:14px 24px 0;
+    display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
+  }
+  .domain-pill{
+    background:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.9);
+    border-radius:999px;padding:9px 18px;font-size:13.5px;font-weight:800;color:var(--mint-deep);
+  }
+
+  .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:18px 24px 40px;}
+  .q-card{
+    background:#fff;border-radius:28px;max-width:480px;width:100%;
+    padding:32px 28px 26px;
+    box-shadow:0 24px 50px rgba(62,143,125,0.18);
+  }
+  .q-kicker{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--mint-l);color:var(--mint-deep);font-size:13.5px;font-weight:800;
+    padding:7px 15px;border-radius:999px;margin-bottom:18px;
+  }
+  .q-title{font-size:21px;line-height:1.48;margin-bottom:24px;color:var(--ink);}
+  .q-no{color:var(--mint-deep);font-weight:800;margin-right:6px;}
+
+  .slider-block{margin-bottom:26px;}
+  .slider-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;}
+  .slider-name{font-size:15px;font-weight:800;color:var(--ink);}
+  .slider-name .icon{margin-right:4px;}
+  .slider-val{font-size:18px;font-weight:800;color:var(--mint-deep);}
+  .slider-block.importance .slider-val{color:#95610F;}
+  .slider-endlabels{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-top:10px;font-weight:700;}
+  .face-scale{position:relative;display:flex;justify-content:space-between;padding-top:4px;}
+  .face-scale::before{
+    content:'';position:absolute;top:28px;left:24px;right:24px;height:2px;
+    background:var(--line);z-index:0;
+  }
+  .face-item{
+    position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;
+    flex:1;cursor:pointer;
+  }
+  .face-circle{
+    width:48px;height:48px;border-radius:50%;background:#fff;
+    border:2px solid var(--line);display:flex;align-items:center;justify-content:center;
+    font-size:22px;filter:grayscale(0.6) opacity(0.55);
+    transition:transform .15s ease, border-color .15s ease, filter .15s ease, box-shadow .15s ease;
+  }
+  .face-item.selected .face-circle{
+    filter:none;transform:scale(1.12);
+    box-shadow:0 6px 14px rgba(0,0,0,0.12);
+  }
+  .face-box{
+    font-size:11.5px;font-weight:800;color:#fff;padding:7px 4px;border-radius:8px;
+    width:100%;text-align:center;opacity:0.5;transition:opacity .15s ease;
+  }
+  .face-item.selected .face-box{opacity:1;}
+
+  .q-actions{margin-top:22px;display:flex;gap:10px;}
+  .check-hint{
+    display:flex;align-items:center;gap:6px;justify-content:center;
+    font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-top:14px;
+  }
+  .next-btn{
+    display:flex;align-items:center;justify-content:center;
+    background:var(--mint-deep);color:#fff;font-size:16.5px;font-weight:800;
+    padding:15px 0;min-height:52px;border-radius:999px;flex:1;
+    box-shadow:0 12px 26px rgba(62,143,125,0.30);
+    opacity:0.4;pointer-events:none;transition:opacity .15s ease;
+    border:none;cursor:pointer;
+  }
+  .next-btn.active{opacity:1;pointer-events:auto;}
+  .prev-btn{
+    display:flex;align-items:center;justify-content:center;
+    background:#fff;color:var(--ink-soft);font-size:16.5px;font-weight:800;
+    padding:15px 0;min-height:52px;border-radius:999px;flex:1;
+    border:1.5px solid var(--line);cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .prev-btn:hover{border-color:var(--mint-s);color:var(--mint-deep);}
+
+  .result-topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;}
+  .result-kicker{font-size:12.5px;font-weight:800;color:var(--mint-deep);margin-bottom:6px;}
+  .result-heading{font-size:19px;font-weight:700;color:var(--ink);font-family:var(--font);}
+  .result-close{
+    width:36px;height:36px;border-radius:50%;background:var(--cream);
+    display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink-soft);
+    flex:none;border:none;cursor:pointer;
+  }
+  .result-hero{
+    width:64px;height:64px;border-radius:50%;background:var(--mint-l);
+    display:flex;align-items:center;justify-content:center;font-size:28px;margin:6px auto 16px;
+  }
+  .result-label{text-align:center;font-size:13px;color:var(--ink-soft);font-weight:700;margin-bottom:6px;}
+  .result-num{font-size:40px;font-weight:800;color:var(--mint-deep);text-align:center;margin-bottom:4px;}
+  .result-sub{text-align:center;font-size:12.5px;color:var(--ink-soft);margin-bottom:6px;}
+  .top-feedback{
+    text-align:center;font-size:13.5px;font-weight:800;color:var(--mint-deep);
+    background:var(--mint-l);border-radius:999px;padding:9px 16px;
+    margin:0 auto 18px;display:inline-block;max-width:100%;
+  }
+  .top-feedback-wrap{text-align:center;margin-bottom:6px;}
+  .radar-wrap{margin:6px auto 20px;}
+
+  .domain-bars{margin-bottom:20px;}
+  .domain-bar-item{margin-bottom:18px;}
+  .domain-bar-top{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:8px;}
+  .domain-bar-top .label{font-weight:800;color:var(--ink);}
+  .domain-bar-top .value{color:var(--mint-deep);font-weight:800;}
+  .domain-bar-top .imp{color:#95610F;font-weight:700;font-size:12px;margin-left:6px;}
+  .domain-bar-track{position:relative;height:9px;background:var(--mint-l);border-radius:999px;overflow:visible;}
+  .domain-bar-fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--mint-deep));border-radius:999px;}
+  .domain-bar-marker{
+    position:absolute;top:50%;transform:translate(-50%,-50%);font-size:13px;line-height:1;
+  }
+  .bar-legend{display:flex;gap:16px;justify-content:center;font-size:11.5px;color:var(--ink-soft);margin-bottom:18px;}
+  .bar-legend span{display:flex;align-items:center;gap:5px;}
+  .bar-legend .dot{width:8px;height:8px;border-radius:50%;background:var(--mint-deep);}
+  .bar-legend .mark{font-size:12px;line-height:1;}
+  .strength-box{background:var(--mint-l);border-radius:16px;padding:16px 18px;margin-bottom:16px;}
+  .strength-box .tip-title{font-size:13.5px;font-weight:800;color:var(--mint-deep);margin-bottom:6px;}
+  .strength-box p{font-size:13px;color:#2E4A40;line-height:1.55;}
+
+  .priority-box{background:#FFF3E9;border-radius:16px;padding:18px 20px;margin-bottom:16px;}
+  .priority-box .tip-title{font-size:14px;font-weight:800;color:#95610F;margin-bottom:8px;}
+  .priority-box p{font-size:13.5px;color:#8A5B23;line-height:1.6;}
+  .result-msg{background:var(--cream);border-radius:16px;padding:16px 18px;margin-bottom:24px;}
+  .result-msg p{font-size:13px;color:var(--ink-soft);line-height:1.6;}
+
+  .result-actions{display:flex;flex-direction:column;gap:10px;}
+  .result-btn{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    min-height:48px;border-radius:999px;font-size:14.5px;font-weight:800;
+    border:1.5px solid var(--line);color:var(--ink);
+  }
+  .result-btn.primary{background:var(--mint-deep);color:#fff;border:none;}
+  .result-diag-row{display:flex;gap:10px;}
+  .result-diag-row .result-btn{flex:1;}
+
+  @page{ margin:8mm; }
+  .preview-overlay{
+    position:fixed;inset:0;background:rgba(35,58,50,0.55);z-index:300;
+    display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 16px;
+  }
+  .preview-sheet{
+    background:#fff;border-radius:20px;max-width:480px;width:100%;padding:22px 20px 26px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.3);
+  }
+  .preview-topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:14px;font-weight:800;color:var(--mint-deep);margin-bottom:14px;
+  }
+  .preview-close{
+    width:32px;height:32px;border-radius:50%;background:var(--mint-l);border:none;
+    color:var(--mint-deep);font-weight:800;cursor:pointer;
+  }
+  .preview-print-btn{width:100%;margin-top:16px;}
+  .preview-copyright{text-align:center;font-size:11px;color:#999;margin-top:14px;}
+  .print-copyright{display:none;}
+  .share-sheet{max-width:340px;}
+  .share-card-img{width:100%;border-radius:14px;display:block;}
+  .share-link-btn{width:100%;margin-top:10px;}
+  @media print{
+    .preview-overlay{display:none !important;}
+  }
+  @media print{
+    html,body{zoom:0.7;}
+    .topbar, .domain-row, .result-actions, .float-hint{display:none !important;}
+    body{background:#fff !important;}
+    .stage{padding:0 !important;}
+    .q-card{box-shadow:none !important;border:none !important;max-width:100% !important;}
+    .bar-legend{display:none !important;}
+    .print-copyright{display:block !important;text-align:center;font-size:10px;color:#999;margin-top:12px;}
+  }
+
+  @media (max-width:520px){
+    .q-card{padding:26px 20px 22px;border-radius:24px;}
+    .q-title{font-size:19px;}
+    .stage{padding:14px 14px 40px;}
+    .face-circle{width:40px;height:40px;font-size:19px;}
+    .face-scale::before{top:24px;}
+  }
+  .site-footer{text-align:center;font-size:11px;color:#748A81;padding:14px 12px calc(14px + env(safe-area-inset-bottom));flex:none;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" id="backBtn" aria-label="이전">←</button>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="q-count" id="qCount">시작</div>
+  <a class="home-btn" href="index.html" aria-label="홈으로">🏠 <span class="home-text">홈으로 가기</span></a>
+</div>
+
+<div class="domain-row" id="domainRow" style="display:none;">
+  <div class="domain-pill" id="domainPill">-</div>
+  <button class="domain-pill" id="previewBtn" style="cursor:pointer;border:none;">🔍 결과 미리보기</button>
+</div>
+
+<div class="stage"><div class="q-card" id="qCard"></div></div>
+
+<script>
+const DOMAINS = {
+  career:{label:'커리어·사회참여', icon:'💼'},
+  finance:{label:'경제·자산', icon:'💰'},
+  health:{label:'건강·활력', icon:'💪'},
+  rel:{label:'관계·사회', icon:'🤝'},
+  leisure:{label:'여가·성장·의미', icon:'🎨'},
+  family:{label:'가정', icon:'🏠'}
+};
+const DOMAIN_ORDER = ['career','finance','health','rel','leisure','family'];
+
+const QUESTIONS = [
+  {id:1,domain:'career',text:'나는 나의 강점, 흥미, 적성에 대해 다른 사람에게 쉽게 설명할 수 있다.'},
+  {id:2,domain:'career',text:'나는 새로운 직무나 활동에 필요한 자격증, 교육, 훈련에 도전할 의사가 있다.'},
+  {id:3,domain:'career',text:'나는 지금까지의 경험을 다른 일이나 분야에서도 활용할 수 있다고 생각한다.'},
+  {id:4,domain:'career',text:'나는 커리어에 필요하다면 새로운 관계를 적극적으로 넓혀간다.'},
+  {id:5,domain:'career',text:'나는 앞으로도 일을 통해 성장과 사회적 기여를 이어가고 싶다.'},
+
+  {id:6,domain:'finance',text:'나는 은퇴 후 필요한 월생활비와 지출규모를 파악하고 있다.'},
+  {id:7,domain:'finance',text:'나는 연금, 금융자산 등 다양한 소득원을 확보하고 있다.'},
+  {id:8,domain:'finance',text:'나는 매월 수입과 지출을 계획적으로 관리하고 있다.'},
+  {id:9,domain:'finance',text:'나는 갑작스러운 의료비나 비상지출을 준비하고 있다.'},
+  {id:10,domain:'finance',text:'나는 현재의 재정 상태에 전반적으로 만족하고 있다.'},
+
+  {id:11,domain:'health',text:'나는 현재 건강상태에 전반적으로 만족하고 있다.'},
+  {id:12,domain:'health',text:'나는 주 3회 이상 규칙적인 운동을 실천하고 있다.'},
+  {id:13,domain:'health',text:'나는 건강한 식습관과 규칙적인 수면을 유지하고 있다.'},
+  {id:14,domain:'health',text:'나는 나만의 방법으로 스트레스를 관리하고 있다.'},
+  {id:15,domain:'health',text:'나는 건강검진을 받고 건강관리에 적극적으로 대응한다.'},
+
+  {id:16,domain:'rel',text:'나는 일상과 고민을 편하게 나눌 수 있는 사람이 있다.'},
+  {id:17,domain:'rel',text:'나는 새로운 사람들과 교류할 기회에 참여하고 있다.'},
+  {id:18,domain:'rel',text:'나는 갑작스러운 어려움이 생겼을 때 도움을 주고받는 지인이 있다.'},
+  {id:19,domain:'rel',text:'나는 지역사회나 모임에 참여하며 소속감과 유대감을 느낀다.'},
+  {id:20,domain:'rel',text:'나는 주변 사람들에게 필요한 존재로서 도움이 되고 있다고 느낀다.'},
+
+  {id:21,domain:'leisure',text:'나는 자유 시간을 보람차게 활용할 수 있는 취미나 관심사가 있다.'},
+  {id:22,domain:'leisure',text:'나는 새로운 경험이나 배움에 지속적으로 관심을 가지고 있다.'},
+  {id:23,domain:'leisure',text:'나는 앞으로 이루고 싶은 목표나 계획이 있다.'},
+  {id:24,domain:'leisure',text:'나는 나의 삶이 가치 있고 의미 있다고 느낀다.'},
+  {id:25,domain:'leisure',text:'나는 아침에 일어날 이유와 기대되는 활동이 있다.'},
+
+  {id:26,domain:'family',text:'나는 가족 안에서 친밀감을 얻고 있다.'},
+  {id:27,domain:'family',text:'나는 가족으로부터 정서적인 지지와 응원을 받고 있다.'},
+  {id:28,domain:'family',text:'우리 가족들은 자연스럽게 하루 일과와 농담을 이야기한다.'},
+  {id:29,domain:'family',text:'나는 변화하는 가정 내 역할과 책임을 자연스럽게 받아들이고 있다.'},
+  {id:30,domain:'family',text:'집에 귀가하면 나는 심리적 안정감과 편안함을 느낀다.'}
+];
+const TOTAL = QUESTIONS.length;
+
+let state = { step:1, answers:{} };
+
+const stage = document.getElementById('qCard');
+const progressFill = document.getElementById('progressFill');
+const qCount = document.getElementById('qCount');
+const backBtn = document.getElementById('backBtn');
+const domainRow = document.getElementById('domainRow');
+const domainPill = document.getElementById('domainPill');
+const previewBtn = document.getElementById('previewBtn');
+previewBtn.addEventListener('click', function(){
+  const SCALE_VALS = [0,2,4,6,8,10];
+  QUESTIONS.forEach(function(q){
+    if(!state.answers[q.id]){
+      state.answers[q.id] = {
+        sat: SCALE_VALS[Math.floor(Math.random()*SCALE_VALS.length)],
+        imp: SCALE_VALS[Math.floor(Math.random()*SCALE_VALS.length)],
+        touched: true
+      };
+    }
+  });
+  goto(TOTAL+1);
+});
+
+function goto(step){
+  state.step = step;
+  render();
+  window.scrollTo({top:0});
+}
+
+function autoAdvance(){
+  const step = state.step;
+  setTimeout(function(){
+    if(state.step === step){ goto(step+1); }
+  }, 320);
+}
+
+function render(){
+  const step = state.step;
+  backBtn.classList.toggle('disabled', step<=1);
+
+  if(step>=1 && step<=TOTAL){
+    const q = QUESTIONS[step-1];
+    qCount.textContent = step+' / '+TOTAL;
+    progressFill.style.width = (step/TOTAL*100)+'%';
+    domainRow.style.display = 'flex';
+    domainPill.textContent = '🧭 생애설계 진단(균형잡힌 삶)';
+    renderQuestion(q);
+  } else {
+    qCount.textContent = '완료';
+    progressFill.style.width = '100%';
+    domainRow.style.display = 'none';
+    renderResult();
+  }
+}
+
+function renderQuestion(q){
+  const saved = state.answers[q.id] || {};
+  const savedSat = saved.sat;
+  const savedImp = saved.imp;
+  const touched = saved.touched || false;
+
+  const SAT_STYLE = [
+    {v:0, face:'😖', color:'#A8362F'},
+    {v:2, face:'🙁', color:'#C06A1F'},
+    {v:4, face:'😐', color:'#B98F2E'},
+    {v:6, face:'🙂', color:'#5C9B70'},
+    {v:8, face:'😊', color:'#307D63'},
+    {v:10, face:'😄', color:'#1E5C42'}
+  ];
+  const IMP_STYLE = [
+    {v:0, face:'😴', color:'#9B9480'},
+    {v:2, face:'😑', color:'#B5934F'},
+    {v:4, face:'🤔', color:'#BE8A29'},
+    {v:6, face:'🙂', color:'#B37A17'},
+    {v:8, face:'⭐', color:'#966508'},
+    {v:10, face:'🌟', color:'#734E06'}
+  ];
+
+  function scaleRow(name, styleList){
+    let html = '<div class="face-scale" id="'+name+'Row">';
+    styleList.forEach(function(s){
+      html += '<div class="face-item" data-v="'+s.v+'">'+
+        '<div class="face-circle">'+s.face+'</div>'+
+        '<div class="face-box" style="background:'+s.color+';">'+s.v+'</div>'+
+      '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  stage.innerHTML = `
+    <span class="q-kicker">${DOMAINS[q.domain].icon} ${DOMAINS[q.domain].label}</span>
+    <h2 class="q-title"><span class="q-no">${q.id}.</span>${q.text}</h2>
+
+    <div class="slider-block satisfaction">
+      <div class="slider-top">
+        <span class="slider-name"><span class="icon">😊</span>만족도</span>
+        <span class="slider-val" id="satVal">${savedSat !== undefined ? savedSat+'점' : '선택해주세요'}</span>
+      </div>
+      ${scaleRow('sat', SAT_STYLE)}
+      <div class="slider-endlabels"><span>매우 불만족</span><span>매우 만족</span></div>
+    </div>
+
+    <div class="slider-block importance">
+      <div class="slider-top">
+        <span class="slider-name"><span class="icon">⭐</span>중요도</span>
+        <span class="slider-val" id="impVal">${savedImp !== undefined ? savedImp+'점' : '선택해주세요'}</span>
+      </div>
+      ${scaleRow('imp', IMP_STYLE)}
+      <div class="slider-endlabels"><span>전혀 중요하지 않음</span><span>매우 중요함</span></div>
+    </div>
+
+    <div class="q-actions">
+      <button class="prev-btn" id="prevBtn">← 이전</button>
+      <button class="next-btn ${touched ? 'active' : ''}" id="nextBtn">다음 →</button>
+    </div>
+    <div class="check-hint">☑️ 만족도·중요도를 모두 체크해야 페이지가 넘어갑니다</div>
+  `;
+
+  const satRow = stage.querySelector('#satRow');
+  const impRow = stage.querySelector('#impRow');
+  const satVal = stage.querySelector('#satVal');
+  const impVal = stage.querySelector('#impVal');
+  const nextBtn = stage.querySelector('#nextBtn');
+  const prevBtn = stage.querySelector('#prevBtn');
+
+  let curSat = savedSat, curImp = savedImp;
+
+  function markSelected(row, val){
+    row.querySelectorAll('.face-item').forEach(function(b){
+      b.classList.toggle('selected', parseInt(b.dataset.v,10) === val);
+    });
+  }
+  if(savedSat !== undefined) markSelected(satRow, savedSat);
+  if(savedImp !== undefined) markSelected(impRow, savedImp);
+
+  function tryEnableNext(){
+    if(curSat !== undefined && curImp !== undefined){
+      const wasActive = nextBtn.classList.contains('active');
+      state.answers[q.id] = { sat:curSat, imp:curImp, touched:true };
+      nextBtn.classList.add('active');
+      if(!wasActive){ autoAdvance(); }
+    }
+  }
+
+  satRow.querySelectorAll('.face-item').forEach(function(b){
+    b.addEventListener('click', function(){
+      curSat = parseInt(b.dataset.v,10);
+      satVal.textContent = curSat+'점';
+      markSelected(satRow, curSat);
+      tryEnableNext();
+    });
+  });
+  impRow.querySelectorAll('.face-item').forEach(function(b){
+    b.addEventListener('click', function(){
+      curImp = parseInt(b.dataset.v,10);
+      impVal.textContent = curImp+'점';
+      markSelected(impRow, curImp);
+      tryEnableNext();
+    });
+  });
+
+  prevBtn.addEventListener('click', function(){ if(state.step>1) goto(state.step-1); });
+  nextBtn.addEventListener('click', function(){
+    if(!nextBtn.classList.contains('active')) return;
+    goto(state.step+1);
+  });
+}
+
+function domainStats(domain){
+  const qs = QUESTIONS.filter(function(q){ return q.domain===domain; });
+  let satSum = 0, impSum = 0, count = 0;
+  qs.forEach(function(q){
+    const a = state.answers[q.id];
+    if(a){ satSum += a.sat; impSum += a.imp; count++; }
+  });
+  return {
+    satScore: satSum,
+    satAvg: count? satSum/count : 0,
+    impAvg: count? impSum/count : 0
+  };
+}
+
+const ACTION_TIPS = {
+  career:'짧은 온라인 강의나 자격증 정보를 하나만 찾아보는 것으로 시작해보세요.',
+  finance:'이번 달 수입과 지출을 한 번 적어보는 것부터 시작해보세요.',
+  health:'이번 주에 건강검진 예약일을 확인하거나 10분 산책을 하나 추가해보세요.',
+  rel:'오랜만에 연락이 뜸했던 사람에게 안부 문자를 보내보세요.',
+  leisure:'예전에 즐겼던 취미 하나를 이번 주에 다시 시도해보세요.',
+  family:'가족과 함께 짧은 식사나 산책 시간을 하나 만들어보세요.'
+};
+
+const CHART_ORDER = ['finance','health','rel','family','leisure','career'];
+const CHART_LABELS = {career:'커리어', finance:'경제·자산', health:'건강·활력', rel:'관계·사회', leisure:'여가', family:'가정'};
+
+function polarPoint(cx,cy,r,angleDeg){
+  const rad = angleDeg*Math.PI/180;
+  return { x: cx + r*Math.sin(rad), y: cy - r*Math.cos(rad) };
+}
+
+function buildRadarSVG(stats){
+  const cx=160, cy=158, maxR=80;
+  const n = CHART_ORDER.length;
+  const angles = CHART_ORDER.map(function(_,i){ return i*(360/n); });
+
+  let gridHtml = '';
+  [0.25,0.5,0.75,1].forEach(function(f){
+    const pts = angles.map(function(a){ const p=polarPoint(cx,cy,maxR*f,a); return p.x+','+p.y; }).join(' ');
+    gridHtml += '<polygon points="'+pts+'" fill="none" stroke="#DCEEE5" stroke-width="1"/>';
+  });
+
+  let axisHtml = '';
+  angles.forEach(function(a){
+    const p = polarPoint(cx,cy,maxR,a);
+    axisHtml += '<line x1="'+cx+'" y1="'+cy+'" x2="'+p.x+'" y2="'+p.y+'" stroke="#DCEEE5" stroke-width="1"/>';
+  });
+
+  const dataPts = CHART_ORDER.map(function(d,i){
+    const val = Math.max(0.04, stats[d].satScore/50);
+    return polarPoint(cx,cy,maxR*val,angles[i]);
+  });
+  const dataPolyStr = dataPts.map(function(p){ return p.x+','+p.y; }).join(' ');
+  let dataHtml = '<polygon points="'+dataPolyStr+'" fill="#3E8F7D" fill-opacity="0.22" stroke="#3E8F7D" stroke-width="2.5"/>';
+  dataPts.forEach(function(p){ dataHtml += '<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="#3E8F7D"/>'; });
+
+  let labelHtml = '';
+  CHART_ORDER.forEach(function(d,i){
+    const a = angles[i];
+    const p = polarPoint(cx,cy,maxR+34,a);
+    const sinA = Math.sin(a*Math.PI/180);
+    let anchor = 'middle';
+    if(sinA>0.35) anchor='start';
+    else if(sinA<-0.35) anchor='end';
+    labelHtml += '<text x="'+p.x+'" y="'+(p.y-6)+'" text-anchor="'+anchor+'" font-size="12" font-weight="800" fill="#233A32">'+DOMAINS[d].icon+' '+CHART_LABELS[d]+'</text>';
+    labelHtml += '<text x="'+p.x+'" y="'+(p.y+11)+'" text-anchor="'+anchor+'" font-size="12" font-weight="700" fill="#3E8F7D">'+stats[d].satScore+'점</text>';
+  });
+
+  return '<svg viewBox="0 0 320 320" width="100%" style="max-width:340px;display:block;margin:0 auto;overflow:visible;">'+
+    gridHtml+axisHtml+dataHtml+labelHtml+
+  '</svg>';
+}
+
+function renderResult(){
+  const stats = {};
+  DOMAIN_ORDER.forEach(function(d){ stats[d] = domainStats(d); });
+  const totalSat = DOMAIN_ORDER.reduce(function(s,d){ return s+stats[d].satScore; }, 0);
+
+  const gaps = DOMAIN_ORDER.map(function(d){
+    return { domain:d, gap: stats[d].impAvg - stats[d].satAvg };
+  }).sort(function(a,b){ return b.gap - a.gap; });
+  const top2 = gaps.slice(0,2).filter(function(g){ return g.gap > 0.3; });
+
+  const strongest = DOMAIN_ORDER.slice().sort(function(a,b){ return stats[b].satScore - stats[a].satScore; })[0];
+
+  const barsHtml = DOMAIN_ORDER.map(function(d){
+    const s = stats[d];
+    const markerPct = Math.min(100, (s.impAvg*5/50*100));
+    return '<div class="domain-bar-item">'+
+      '<div class="domain-bar-top"><span class="label">'+DOMAINS[d].icon+' '+DOMAINS[d].label+'</span>'+
+      '<span><span class="value">'+s.satScore+'/50점</span><span class="imp">중요도 '+s.impAvg.toFixed(1)+'</span></span></div>'+
+      '<div class="domain-bar-track"><div class="domain-bar-fill" style="width:'+(s.satScore/50*100)+'%"></div>'+
+      '<span class="domain-bar-marker" style="left:'+markerPct+'%;">⭐</span></div>'+
+    '</div>';
+  }).join('');
+
+  const priorityHtml = top2.length ?
+    ('<div class="priority-box"><div class="tip-title">💡 지금 가장 신경 써야 할 영역</div>'+
+      top2.map(function(g){
+        return '<p style="margin-bottom:6px;"><b>'+DOMAINS[g.domain].label+'</b> — '+ACTION_TIPS[g.domain]+'</p>';
+      }).join('') +
+    '</div>')
+    : '<div class="priority-box"><div class="tip-title">💡 전반적으로 균형이 잡혀있어요</div><p>중요하게 여기는 영역들의 만족도도 고르게 채워져 있어요. 지금의 균형을 잘 유지해보세요.</p></div>';
+
+  const strengthHtml = '<div class="strength-box"><div class="tip-title">🌱 가장 잘 채워져 있는 영역</div>'+
+    '<p><b>'+DOMAINS[strongest].label+'</b> 영역은 지금도 잘 유지되고 있어요. 이 영역에서 느끼는 방식을 다른 영역에도 적용해보면 도움이 될 수 있어요.</p></div>';
+
+  const reportHtml =
+    '<div class="result-hero">🧭</div>' +
+    '<div class="result-label">전체 만족도</div>' +
+    '<div class="result-num">'+totalSat+' <span style="font-size:20px;">/ 300점</span></div>' +
+    '<div class="result-sub">6개 영역 × 50점 만점 기준</div>' +
+    '<div class="top-feedback-wrap"><span class="top-feedback">🎉 '+DOMAINS[strongest].icon+' <b>'+DOMAINS[strongest].label+'</b> 영역이 '+stats[strongest].satScore+'점으로 가장 높아요!</span></div>' +
+    '<div class="radar-wrap">'+buildRadarSVG(stats)+'</div>' +
+    '<div class="bar-legend"><span><span class="dot"></span>만족도 막대</span><span><span class="mark">⭐</span>중요도 위치</span></div>' +
+    '<div class="domain-bars">'+barsHtml+'</div>' +
+    priorityHtml +
+    strengthHtml +
+    '<div class="result-msg"><p>막대는 영역별 만족도(0~50점)를, ⭐ 별표는 그 영역의 중요도 위치를 보여줘요. 별표가 막대보다 오른쪽에 있으면 "중요한데 아직 못 채운 영역"이에요.</p></div>';
+
+  stage.innerHTML =
+    '<div class="result-topbar">' +
+      '<div><div class="result-kicker">🧭 생애설계 진단</div><div class="result-heading">나의 균형 점수예요</div></div>' +
+      '<button class="result-close" aria-label="닫기">✕</button>' +
+    '</div>' +
+    reportHtml +
+    '<div class="print-copyright">© 2026 세컨라이프 디자인. JMCARER. All rights reserved.</div>' +
+    '<div class="result-actions">' +
+      '<button class="result-btn" id="retryBtn">↻ 다시 진단하기</button>' +
+      '<div class="result-diag-row">' +
+        '<button class="result-btn primary" id="pdfBtn">🖨️ PDF로 저장하기</button>' +
+        '<button class="result-btn" id="previewBtn2">👁️ 요약페이지 미리보기</button>' +
+      '</div>' +
+      '<button class="result-btn" id="shareBtn">🔗 결과 공유하기</button>' +
+      '<div class="result-diag-row">' +
+        '<a href="expectancy-intro.html" class="result-btn primary">⏳ 기대수명 진단</a>' +
+        '<a href="persona-quiz.html" class="result-btn primary" style="background:#E8A23A;">🎭 부캐 진단</a>' +
+      '</div>' +
+      '<a href="index.html" class="result-btn">🏠 홈으로</a>' +
+    '</div>';
+
+  const LANDING_URL = 'index.html';
+
+  async function generateShareCard(){
+    try{ await document.fonts.load('72px "Nanum Brush Script"'); }catch(e){}
+
+    const PALETTES = {
+      career:{base:'#EFF3FB', blobs:['#AFCBEF','#C9E4F0','#E3D6F5']},
+      finance:{base:'#FFF4E3', blobs:['#F6D28A','#F3B27A','#F7E1A0']},
+      health:{base:'#FDEDF1', blobs:['#F7B8C6','#F5D3A0','#E7B7E0']},
+      rel:{base:'#EAF2FB', blobs:['#B7D8F5','#C9B7F0','#F7C6DE']},
+      leisure:{base:'#FCEEE3', blobs:['#F8C9A7','#F4A9A8','#D9C7E8']},
+      family:{base:'#EAF7F1', blobs:['#8FBF9B','#C9E4F0','#F7E1A0']}
+    };
+    const pal = PALETTES[strongest] || PALETTES.family;
+    const INK = '#2E241C', INK_SOFT = 'rgba(46,36,28,0.62)';
+
+    const W = 720, H = 1280;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = pal.base;
+    ctx.fillRect(0,0,W,H);
+
+    function blob(cx,cy,r,color,alpha){
+      const g = ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+      g.addColorStop(0, color);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    blob(W*0.15, H*0.12, 320, pal.blobs[0], 0.55);
+    blob(W*0.85, H*0.28, 380, pal.blobs[1], 0.45);
+    blob(W*0.25, H*0.7, 400, pal.blobs[2], 0.4);
+    blob(W*0.8, H*0.85, 340, pal.blobs[0], 0.4);
+    blob(W*0.5, H*0.5, 460, pal.blobs[1], 0.22);
+
+    for(let i=0;i<70;i++){
+      const fx = Math.random()*W, fy = H*0.75 + Math.random()*H*0.25;
+      ctx.fillStyle = 'rgba(255,255,255,'+(0.15+Math.random()*0.25)+')';
+      ctx.beginPath(); ctx.arc(fx,fy,Math.random()*1.6+0.4,0,Math.PI*2); ctx.fill();
+    }
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = INK_SOFT;
+    ctx.font = '600 22px Pretendard, sans-serif';
+    ctx.fillText('생애설계 진단 · LIFE BALANCE', W/2, 100);
+
+    ctx.fillStyle = INK;
+    ctx.font = '500 26px Pretendard, sans-serif';
+    ctx.fillText('지금 가장 빛나는 나의 영역은', W/2, 430);
+
+    ctx.font = "80px 'Nanum Brush Script', cursive";
+    ctx.fillText(DOMAINS[strongest].icon+' '+DOMAINS[strongest].label, W/2, 590);
+
+    ctx.font = '500 24px Pretendard, sans-serif';
+    ctx.fillStyle = INK_SOFT;
+    ctx.fillText('전체 만족도 '+totalSat+' / 300점', W/2, 700);
+
+    ctx.font = '400 20px Pretendard, sans-serif';
+    ctx.fillStyle = INK_SOFT;
+    ctx.fillText('일·경제·건강·관계·여가·가정, 6개 영역을 진단했어요', W/2, 1000);
+
+    ctx.font = '600 18px Pretendard, sans-serif';
+    ctx.fillStyle = '#3E8F7D';
+    ctx.fillText('#생애설계진단  #균형잡힌삶  #세컨라이프디자인', W/2, 1060);
+
+    ctx.strokeStyle = 'rgba(46,36,28,0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(W/2, 1170, 150, 40, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.font = '700 22px Pretendard, sans-serif';
+    ctx.fillStyle = INK;
+    ctx.fillText('🌿 세컨라이프 디자인', W/2, 1178);
+
+    ctx.font = '400 14px Pretendard, sans-serif';
+    ctx.fillStyle = 'rgba(46,36,28,0.45)';
+    ctx.fillText('© 2026 세컨라이프 디자인. JMCARER. All rights reserved.', W/2, 1250);
+
+    return canvas;
+  }
+
+  async function openShareCard(){
+    const canvas = await generateShareCard();
+    const dataUrl = canvas.toDataURL('image/png');
+    const overlay = document.createElement('div');
+    overlay.className = 'preview-overlay';
+    overlay.innerHTML =
+      '<div class="preview-sheet share-sheet">' +
+        '<div class="preview-topbar">' +
+          '<span>🔗 결과 공유 카드</span>' +
+          '<button class="preview-close" id="shareClose">✕</button>' +
+        '</div>' +
+        '<img src="'+dataUrl+'" class="share-card-img" alt="생애설계 결과 카드">' +
+        '<a href="'+dataUrl+'" download="생애설계-결과.png" class="result-btn primary preview-print-btn" id="shareDownloadBtn">⬇️ 이미지 다운로드</a>' +
+        '<button class="result-btn share-link-btn" id="shareLinkBtn">🔗 진단 링크 복사하기</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('#shareClose').addEventListener('click', function(){ overlay.remove(); });
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+    overlay.querySelector('#shareLinkBtn').addEventListener('click', function(){
+      navigator.clipboard.writeText(LANDING_URL).then(function(){
+        overlay.querySelector('#shareLinkBtn').textContent = '✅ 링크가 복사되었어요';
+      });
+    });
+
+    if(navigator.share){
+      canvas.toBlob(function(blob){
+        const file = new File([blob], 'lifedesign-result.png', {type:'image/png'});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          const shareBtnEl = document.createElement('button');
+          shareBtnEl.className = 'result-btn preview-print-btn';
+          shareBtnEl.textContent = '📤 바로 공유하기';
+          shareBtnEl.addEventListener('click', function(){
+            navigator.share({
+              files:[file],
+              title:'나의 생애설계 진단 결과',
+              text:'전체 만족도 '+totalSat+'/300점! 세컨라이프 디자인에서 나도 확인해보기: '+LANDING_URL,
+              url: LANDING_URL
+            });
+          });
+          overlay.querySelector('.preview-sheet').appendChild(shareBtnEl);
+        }
+      });
+    }
+  }
+
+  function openSummaryPreview(){
+    const overlay = document.createElement('div');
+    overlay.className = 'preview-overlay';
+    overlay.innerHTML =
+      '<div class="preview-sheet">' +
+        '<div class="preview-topbar">' +
+          '<span>👁️ 요약페이지 미리보기</span>' +
+          '<button class="preview-close" id="previewClose">✕</button>' +
+        '</div>' +
+        '<div class="preview-compact">'+reportHtml+'</div>' +
+        '<div class="preview-copyright">© 2026 세컨라이프 디자인. JMCARER. All rights reserved.</div>' +
+        '<button class="result-btn primary preview-print-btn" id="previewPrintBtn">🖨️ 지금 PDF로 저장하기</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('#previewClose').addEventListener('click', function(){ overlay.remove(); });
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+    overlay.querySelector('#previewPrintBtn').addEventListener('click', function(){ window.print(); });
+  }
+
+  stage.querySelector('#pdfBtn').addEventListener('click', function(){
+    window.print();
+  });
+  stage.querySelector('#previewBtn2').addEventListener('click', openSummaryPreview);
+  stage.querySelector('#shareBtn').addEventListener('click', openShareCard);
+
+  stage.querySelector('#retryBtn').addEventListener('click', function(){
+    state = { step:1, answers:{} };
+    goto(1);
+  });
+}
+
+goto(1);
+backBtn.addEventListener('click', function(){ if(state.step>1) goto(state.step-1); });
+if(new URLSearchParams(location.search).get('preview')==='1'){ previewBtn.click(); }
+</script>
+
+<div class="site-footer">© 2026 세컨라이프 디자인. JMCARER. All rights reserved.</div>
+
+</body>
+</html>

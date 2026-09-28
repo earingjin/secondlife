@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기대수명 진단 | 세컨라이프 디자인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --peach:#FFDDC8;
+    --blush:#FBB3C6;
+    --coral:#E8637A;
+    --coral-deep:#C94764;
+    --mint:#6FC0AE;
+    --mint-deep:#3E8F7D;
+    --cream:#FFF9F4;
+    --ink:#3A2C2F;
+    --ink-soft:#8B767A;
+    --line:#F0E1DD;
+    --gold:#F2B84B;
+    --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    background:linear-gradient(160deg, var(--peach) 0%, var(--blush) 55%, #F79CB6 100%);
+    min-height:100vh;
+    display:flex;flex-direction:column;
+    -webkit-font-smoothing:antialiased;
+  }
+  h2{font-family:var(--font);font-weight:700;letter-spacing:-0.01em;}
+  a,button{text-decoration:none;color:inherit;font-family:var(--font);}
+
+  .topbar{
+    display:flex;align-items:center;gap:14px;
+    padding:20px 24px 0;max-width:640px;margin:0 auto;width:100%;
+  }
+  .back-btn{
+    width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.6);
+    display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--coral-deep);flex:none;
+    border:none;cursor:pointer;transition:opacity .15s ease;
+  }
+  .back-btn.disabled{opacity:0.35;pointer-events:none;}
+  .home-btn{
+    height:44px;padding:0 16px;border-radius:999px;background:var(--coral);
+    display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:800;color:#fff;flex:none;
+    border:none;cursor:pointer;text-decoration:none;box-shadow:0 8px 18px rgba(232,99,122,0.30);white-space:nowrap;
+  }
+  @media (max-width:480px){ .home-btn .home-text{display:none;} .home-btn{padding:0;width:44px;justify-content:center;} }
+  .progress-track{flex:1;height:8px;background:rgba(255,255,255,0.5);border-radius:999px;overflow:hidden;}
+  .progress-fill{height:100%;width:0%;background:var(--coral);border-radius:999px;transition:width .3s ease;}
+  .q-count{font-size:14px;font-weight:800;color:#7A4B52;flex:none;min-width:52px;text-align:right;}
+
+  .domain-row{
+    max-width:640px;margin:0 auto;width:100%;
+    padding:14px 24px 0;
+    display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
+  }
+  .domain-pill{
+    background:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.9);
+    border-radius:999px;padding:9px 18px;font-size:13px;font-weight:800;color:var(--coral-deep);
+    text-align:center;
+  }
+  .score-row{
+    max-width:640px;margin:0 auto;width:100%;
+    padding:14px 24px 0;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .score-card{
+    background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.9);
+    border-radius:999px;padding:10px 22px;
+    display:flex;align-items:center;gap:10px;
+    box-shadow:0 8px 20px rgba(120,50,70,0.10);
+  }
+  .score-label{font-size:13px;font-weight:800;color:#7A4B52;}
+  .score-value{font-size:20px;font-weight:800;color:var(--coral-deep);min-width:64px;text-align:center;transition:color .25s ease;}
+  .score-value.up{color:var(--mint-deep);}
+  .score-value.down{color:#C94764;}
+
+  .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:18px 24px 110px;}
+  .q-card{
+    background:#fff;border-radius:28px;max-width:480px;width:100%;
+    padding:34px 30px 28px;
+    box-shadow:0 24px 50px rgba(120,50,70,0.18);
+  }
+  .q-kicker{
+    display:inline-flex;align-items:center;gap:6px;
+    background:#FDE1E6;color:var(--coral-deep);font-size:12.5px;font-weight:800;
+    padding:6px 14px;border-radius:999px;margin-bottom:16px;
+  }
+  .q-icon{font-size:32px;margin-bottom:12px;}
+  .q-tag{
+    display:inline-block;font-size:11.5px;font-weight:800;color:var(--ink-soft);
+    background:var(--cream);padding:4px 10px;border-radius:999px;margin-bottom:10px;
+  }
+  .q-title{font-size:21px;line-height:1.42;margin-bottom:8px;color:var(--ink);}
+  .q-no{color:var(--coral-deep);font-weight:800;margin-right:6px;}
+  .q-sub{font-size:13.5px;color:var(--ink-soft);margin-bottom:22px;}
+
+  .opt-list{display:flex;flex-direction:column;gap:10px;margin-bottom:6px;}
+  .opt5{
+    display:flex;align-items:center;gap:12px;
+    border:1.5px solid var(--line);border-radius:16px;
+    padding:12px 16px;cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .opt5:hover{border-color:var(--blush);background:#FFF6F4;}
+  .opt5.selected{border-color:var(--coral);background:#FFF0F2;}
+  .opt5-num{font-weight:800;color:var(--ink-soft);font-size:15px;flex:none;width:20px;text-align:center;}
+  .opt5.selected .opt5-num{color:var(--coral-deep);}
+  .opt5-label{flex:1;font-size:14.5px;font-weight:700;color:var(--ink);}
+  .opt5-check{opacity:0;color:var(--coral-deep);font-weight:800;font-size:15px;}
+  .opt5.selected .opt5-check{opacity:1;}
+
+  .gender-row{display:flex;gap:12px;margin-bottom:20px;}
+  .gender-btn{
+    flex:1;padding:18px 0;border-radius:16px;border:1.5px solid var(--line);
+    text-align:center;font-size:15px;font-weight:800;color:var(--ink-soft);cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, color .15s ease;
+  }
+  .gender-btn.selected{border-color:var(--coral);background:#FFF0F2;color:var(--coral-deep);}
+  .year-field{margin-bottom:8px;}
+  .year-field label{display:block;font-size:13px;font-weight:800;color:var(--ink-soft);margin-bottom:8px;}
+  .year-field input{
+    width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line);
+    font-size:16px;font-weight:700;color:var(--ink);font-family:var(--font);
+  }
+  .year-field input:focus{outline:none;border-color:var(--coral);}
+
+  .q-actions{margin-top:24px;display:flex;gap:10px;}
+  .check-hint{
+    display:flex;align-items:center;gap:6px;justify-content:center;
+    font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-top:14px;
+  }
+  .next-btn{
+    display:flex;align-items:center;justify-content:center;
+    background:var(--coral);color:#fff;font-size:15.5px;font-weight:800;
+    padding:14px 0;min-height:48px;border-radius:999px;flex:1;
+    box-shadow:0 12px 26px rgba(232,99,122,0.30);
+    opacity:0.4;pointer-events:none;transition:opacity .15s ease;
+    border:none;cursor:pointer;
+  }
+  .next-btn.active{opacity:1;pointer-events:auto;}
+  .prev-btn{
+    display:flex;align-items:center;justify-content:center;
+    background:#fff;color:var(--ink-soft);font-size:15.5px;font-weight:800;
+    padding:14px 0;min-height:48px;border-radius:999px;flex:1;
+    border:1.5px solid var(--line);
+    cursor:pointer;transition:border-color .15s ease, color .15s ease;
+  }
+  .prev-btn:hover{border-color:var(--blush);color:var(--coral-deep);}
+  .prev-btn.disabled{opacity:0.35;pointer-events:none;}
+
+  .float-hint{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+    background:rgba(255,255,255,0.9);border-radius:999px;
+    padding:9px 18px;font-size:12.5px;font-weight:700;color:var(--ink-soft);
+    box-shadow:0 10px 24px rgba(120,50,70,0.15);
+  }
+
+  .result-topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;}
+  .result-kicker{font-size:12.5px;font-weight:800;color:var(--mint-deep);margin-bottom:6px;}
+  .result-heading{font-size:19px;font-weight:700;color:var(--ink);font-family:var(--font);}
+  .result-close{
+    width:36px;height:36px;border-radius:50%;background:var(--cream);
+    display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink-soft);
+    flex:none;border:none;cursor:pointer;
+  }
+  .result-hero{
+    width:64px;height:64px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:28px;margin:6px auto 16px;
+  }
+  .result-hero.below{background:#FFF1DC;}
+  .result-hero.above{background:#DCF0E9;}
+  .result-label{text-align:center;font-size:13px;color:var(--ink-soft);font-weight:700;margin-bottom:6px;}
+  .result-num{font-size:46px;font-weight:800;color:var(--coral-deep);text-align:center;margin-bottom:10px;}
+  .result-compare{text-align:center;font-size:13.5px;color:var(--ink);margin-bottom:4px;}
+  .result-compare b{color:var(--ink);}
+  .result-source{text-align:center;font-size:11px;color:var(--ink-soft);margin-bottom:22px;line-height:1.6;padding:0 8px;}
+  .result-msg{
+    background:var(--cream);border-radius:16px;padding:18px 20px;margin-bottom:16px;
+  }
+  .result-msg p{font-size:14px;color:var(--ink);line-height:1.6;margin-bottom:10px;}
+  .result-msg .disclaimer{font-size:11.5px;color:var(--ink-soft);line-height:1.65;margin-bottom:0;}
+  .result-tip{
+    background:#FFF3E9;border-radius:16px;padding:18px 20px;margin-bottom:24px;
+  }
+  .result-tip .tip-title{font-size:14px;font-weight:800;color:#95610F;margin-bottom:8px;}
+  .result-tip p{font-size:13.5px;color:#8A5B23;line-height:1.6;}
+  .result-actions{display:flex;flex-direction:column;gap:10px;}
+
+  @page{ margin:8mm; }
+  .preview-overlay{
+    position:fixed;inset:0;background:rgba(58,44,47,0.55);z-index:300;
+    display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 16px;
+  }
+  .preview-sheet{
+    background:#fff;border-radius:20px;max-width:480px;width:100%;padding:22px 20px 26px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.3);
+  }
+  .preview-topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:14px;font-weight:800;color:var(--coral-deep);margin-bottom:14px;
+  }
+  .preview-close{
+    width:32px;height:32px;border-radius:50%;background:#FDE1E6;border:none;
+    color:var(--coral-deep);font-weight:800;cursor:pointer;
+  }
+  .preview-print-btn{width:100%;margin-top:16px;}
+  .preview-copyright{text-align:center;font-size:11px;color:#999;margin-top:14px;}
+  .print-copyright{display:none;}
+  .share-sheet{max-width:340px;}
+  .share-card-img{width:100%;border-radius:14px;display:block;}
+  .share-link-btn{width:100%;margin-top:10px;}
+  @media print{
+    .preview-overlay{display:none !important;}
+  }
+  @media print{
+    html,body{zoom:0.85;}
+    .topbar, .float-hint{display:none !important;}
+    body{background:#fff !important;}
+    .stage{padding:0 !important;}
+    .q-card{box-shadow:none !important;border:none !important;max-width:100% !important;}
+    .result-actions{display:none !important;}
+    .print-copyright{display:block !important;text-align:center;font-size:10px;color:#999;margin-top:12px;}
+  }
+  .result-btn{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    min-height:48px;border-radius:999px;font-size:14.5px;font-weight:800;
+    border:1.5px solid var(--line);color:var(--ink);
+  }
+  .result-btn.primary{background:var(--mint-deep);color:#fff;border:none;}
+
+  @media (max-width:520px){
+    .q-card{padding:26px 22px 22px;border-radius:24px;}
+    .q-title{font-size:19px;}
+  }
+  .site-footer{text-align:center;font-size:11px;color:#8A5B62;padding:14px 12px calc(14px + env(safe-area-inset-bottom));flex:none;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" id="backBtn" aria-label="이전">←</button>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="q-count" id="qCount">시작 전</div>
+  <a class="home-btn" href="index.html" aria-label="홈으로">🏠 <span class="home-text">홈으로 가기</span></a>
+</div>
+
+<div class="domain-row" id="domainRow" style="display:flex;">
+  <div class="domain-pill">⏳ 기대수명 진단(시간자산)</div>
+  <button class="domain-pill" id="previewBtn" style="cursor:pointer;border:none;">🔍 결과 미리보기</button>
+</div>
+
+<div class="score-row" id="scoreRow" style="display:none;">
+  <div class="score-card">
+    <span class="score-label">현재 나의 예상 수명</span>
+    <span class="score-value" id="scoreValue">-</span>
+  </div>
+</div>
+
+<div class="stage"><div class="q-card" id="qCard"></div></div>
+<div class="float-hint" id="floatHint">⊙ 진단시간 : 5~10분 소요</div>
+
+<script>
+const AREA = {
+  1:'영역 1 · 신체활동 및 좌식습관', 2:'영역 2 · 한국형 영양 및 식습관',
+  3:'영역 3 · 한국인 대사 기준 및 수면', 4:'영역 4 · 음주·흡연 및 국가검진 실천',
+  5:'영역 5 · 정신건강 및 한국형 사회적 관계망', 6:'영역 6 · 가족력 및 기저질환'
+};
+const AREA_ICON = {1:'🏃',2:'🥗',3:'💤',4:'🚭',5:'🤝',6:'🧬'};
+
+const LIKERT = [
+  {v:0.4,label:'매우 그렇다'},{v:0.2,label:'그렇다'},{v:0,label:'보통이다'},
+  {v:-0.2,label:'아니다'},{v:-0.4,label:'전혀 아니다'}
+];
+const NUM = ['①','②','③','④','⑤'];
+
+const QUESTIONS = [
+  {id:1,area:1,type:'likert',text:'나는 일주일에 총 150분 이상의 중강도 유산소 운동(빠르게 걷기, 자전거 등)을 실천한다.'},
+  {id:2,area:1,type:'likert',text:'나는 주 2회 이상 근력 강화 운동(스쿼트, 팔굽혀펴기, 기구 운동 등)을 지속한다.'},
+  {id:3,area:1,type:'likert',text:'나는 하루 중 연속해서 앉아있는 시간을 8시간 미만으로 유지하고 자주 움직인다.'},
+  {id:4,area:1,type:'likert',text:'나는 일상생활(계단 이용, 출퇴근 걷기 등) 속에서 활발하게 신체 활동을 실천한다.'},
+
+  {id:5,area:2,type:'likert',text:'나는 국물 적게 먹기, 젓갈류 줄이기 등 나트륨 섭취를 절제한다.'},
+  {id:6,area:2,type:'likert',text:'나는 가공육(소시지, 햄 등)과 붉은 고기의 과도한 섭취를 피한다.'},
+  {id:7,area:2,type:'likert',text:'나는 매일 신선한 채소, 과일, 통곡물, 콩류를 풍부하게 섭취한다.'},
+  {id:8,area:2,type:'likert',text:'나는 가공음료, 탄산음료, 초가공식품을 자주 섭취하지 않는다.'},
+
+  {id:9,area:3,type:'likert',text:'나는 매일 밤 7~8시간의 규칙적인 수면을 취한다.'},
+  {id:10,area:3,type:'likert',tag:'복부둘레',weight:1.5,text:'나의 복부 둘레는 한국인 정상 범위(남성 90cm / 여성 85cm 미만)를 유지하고 있다.'},
+  {id:11,area:3,type:'likert',text:'나의 혈압은 정상 범위(수축기 120 / 이완기 80mmHg 미만)를 유지하고 있다.'},
+  {id:12,area:3,type:'likert',text:'나의 공복 혈당 수치는 정상 범위(100mg/dL 미만)를 유지하고 있다.'},
+  {id:13,area:3,type:'likert',text:'나의 혈중 콜레스테롤 수치를 주기적으로 확인하고 관리한다.'},
+
+  {id:14,area:4,type:'choice',tag:'흡연',text:'나는 흡연 상태에 해당합니다.',options:[
+    {label:'현재 흡연 중',delta:-2.5},
+    {label:'과거 흡연하였으나 5년 이상 금연 중',delta:0},
+    {label:'평생 비흡연',delta:0.8}
+  ]},
+  {id:15,area:4,type:'choice',tag:'음주',text:'나는 음주 습관에 해당합니다.',options:[
+    {label:'고위험 음주(주 2회 이상, 회당 소주 1병 이상)',delta:-1.5},
+    {label:'절주 또는 비음주',delta:0.4}
+  ]},
+  {id:16,area:4,type:'choice',tag:'정기검진',text:'나는 국가 2년 주기 일반건강검진 및 암 검진을 제때 받는다.',options:[
+    {label:'제때 수검함',delta:0.8},
+    {label:'미수검 또는 미루는 편임',delta:-0.8}
+  ]},
+  {id:17,area:4,type:'likert',text:'나는 몸에 이상 증상이 있을 때 망설이지 않고 전문 의료기관을 방문한다.'},
+
+  {id:18,area:5,type:'likert',text:'나는 만성적인 스트레스나 피로가 쌓였을 때 이를 해소하는 나만의 이완 방법이 있다.'},
+  {id:19,area:5,type:'likert',text:'나는 낮 동안 햇볕을 쬐며 산책하거나 야외 활동을 정기적으로 갖는다.'},
+  {id:20,area:5,type:'likert',text:'나는 마음을 털어놓거나 어려울 때 도움을 주고받을 수 있는 지인/가족이 있다.'},
+  {id:21,area:5,type:'likert',text:'나는 주 1회 이상 지인, 이웃, 모임 사람들과 지속적으로 교류한다. (독거/고립 방지)'},
+  {id:22,area:5,type:'likert',text:'나는 아침에 눈을 떴을 때 그날 기대되는 활동이나 일상의 목적의식이 있다.'}
+];
+
+const K_QUESTIONS = [
+  {id:23,area:6,tag:'직계가족력',text:'직계가족(부모, 형제자매) 중 60세 이전에 심뇌혈관질환(심근경색, 뇌졸중)이나 암 진단을 받은 경우가 있습니까?',
+    options:[{label:'있음',k:0.9},{label:'없음',k:1.0}]},
+  {id:24,area:6,tag:'중증질환 이력',text:'심근경색, 뇌졸중, 협심증 등 중증 심뇌혈관질환 또는 암 진단을 받았거나 치료를 받은 적이 있습니까?',
+    options:[{label:'있음',k:0.8},{label:'없음',k:1.0}]},
+  {id:25,area:6,tag:'만성질환 복합유병',text:'고혈압, 당뇨병, 이상지질혈증 중 현재 약물을 복용 중인 질환은 몇 개입니까?',
+    options:[{label:'2개 이상 복용 중',k:0.8},{label:'1개 복용 중',k:0.9},{label:'없음',k:1.0}]}
+];
+
+const LIFE_TABLE = {
+  male:{40:81.0,50:81.5,60:83.4,70:85.5,80:88.5},
+  female:{40:86.5,50:87.0,60:88.0,70:89.5,80:91.0}
+};
+function nearestBracket(age){
+  const b=[40,50,60,70,80]; let best=b[0],diff=Infinity;
+  b.forEach(x=>{const d=Math.abs(age-x); if(d<diff){diff=d;best=x;}});
+  return best;
+}
+function getBaseLife(gender,birthYear){
+  const age = 2026-birthYear;
+  return LIFE_TABLE[gender][nearestBracket(age)];
+}
+
+let state = { step:0, gender:null, birthYear:null, base:null, answers:{} };
+
+const stage = document.getElementById('qCard');
+const progressFill = document.getElementById('progressFill');
+const qCount = document.getElementById('qCount');
+const backBtn = document.getElementById('backBtn');
+const scoreRow = document.getElementById('scoreRow');
+const previewBtn = document.getElementById('previewBtn');
+previewBtn.addEventListener('click', function(){
+  if(!state.gender){ state.gender = 'male'; }
+  if(!state.birthYear){ state.birthYear = 1966; }
+  if(state.base === null){ state.base = getBaseLife(state.gender, state.birthYear); }
+  QUESTIONS.forEach(function(q){
+    if(state.answers[q.id] === undefined){
+      if(q.type === 'choice'){
+        const opt = q.options[Math.floor(Math.random()*q.options.length)];
+        state.answers[q.id] = opt.delta;
+      } else {
+        const w = q.weight || 1;
+        const vals = [-0.4,-0.2,0,0.2,0.4].map(function(v){ return v*w; });
+        state.answers[q.id] = vals[Math.floor(Math.random()*vals.length)];
+      }
+    }
+  });
+  K_QUESTIONS.forEach(function(q){
+    if(state.answers[q.id] === undefined){
+      const opt = q.options[Math.floor(Math.random()*q.options.length)];
+      state.answers[q.id] = opt.k;
+    }
+  });
+  goto(26);
+});
+const scoreValue = document.getElementById('scoreValue');
+const floatHint = document.getElementById('floatHint');
+
+function currentDeltaSum(previewId, previewVal){
+  let sum = 0;
+  QUESTIONS.forEach(q=>{
+    if(q.id === previewId){ sum += previewVal; }
+    else if(state.answers[q.id] !== undefined){ sum += state.answers[q.id]; }
+  });
+  return sum;
+}
+function currentK(previewId, previewK){
+  let ks = [];
+  K_QUESTIONS.forEach(q=>{
+    if(q.id === previewId){ ks.push(previewK); }
+    else if(state.answers[q.id] !== undefined){ ks.push(state.answers[q.id]); }
+  });
+  if(ks.length===0) return 1.0;
+  return Math.min(...ks);
+}
+function updateScore(previewId, previewVal){
+  if(state.base === null) return;
+  const deltaSum = currentDeltaSum(
+    (previewId && previewId<=22) ? previewId : null,
+    (previewId && previewId<=22) ? previewVal : null
+  );
+  const k = currentK(
+    (previewId && previewId>=23) ? previewId : null,
+    (previewId && previewId>=23) ? previewVal : null
+  );
+  const total = state.base + deltaSum * k;
+  scoreValue.textContent = total.toFixed(1)+'세';
+  scoreValue.classList.remove('up','down');
+  if(deltaSum>0) scoreValue.classList.add('up');
+  else if(deltaSum<0) scoreValue.classList.add('down');
+}
+
+function goto(step){
+  state.step = step;
+  render();
+  window.scrollTo({top:0});
+}
+function autoAdvance(){
+  const step = state.step;
+  setTimeout(function(){
+    if(state.step === step){ goto(step+1); }
+  }, 320);
+}
+
+function render(){
+  const step = state.step;
+  backBtn.classList.toggle('disabled', step===0);
+
+  if(step===0){
+    qCount.textContent = '기본정보';
+    progressFill.style.width = '0%';
+    scoreRow.style.display = 'none';
+    floatHint.style.display = 'block';
+    floatHint.textContent = '⊙ 진단시간 : 5~10분 소요';
+    renderBasicInfo();
+  } else if(step>=1 && step<=25){
+    qCount.textContent = step+' / 25';
+    progressFill.style.width = (step/25*100)+'%';
+    scoreRow.style.display = 'flex';
+    floatHint.style.display = 'block';
+    floatHint.textContent = '⊙ 진단시간 : 5~10분 소요';
+    if(step<=22) {
+      const q = QUESTIONS[step-1];
+      if(q.type==='choice') renderChoiceDelta(q);
+      else renderLikert(q);
+    }
+    else renderKQuestion(K_QUESTIONS[step-23]);
+  } else {
+    qCount.textContent = '완료';
+    progressFill.style.width = '100%';
+    floatHint.style.display = 'none';
+    renderResult();
+  }
+}
+
+function renderBasicInfo(){
+  stage.innerHTML = `
+    <span class="q-kicker">⏳ 기대수명 진단</span>
+    <div class="q-icon">📋</div>
+    <h2 class="q-title">먼저, 기본 정보를<br>알려주세요</h2>
+    <p class="q-sub">성별과 출생연도로 기초 수명을 계산합니다.</p>
+
+    <div class="gender-row" id="genderRow">
+      <div class="gender-btn" data-g="male">남성</div>
+      <div class="gender-btn" data-g="female">여성</div>
+    </div>
+    <div class="year-field">
+      <label>출생연도</label>
+      <input type="number" id="birthYearInput" placeholder="예: 1966" min="1930" max="2015">
+    </div>
+    <div class="q-actions">
+      <button class="prev-btn disabled" id="prevBtn">← 이전</button>
+      <button class="next-btn" id="nextBtn">다음 →</button>
+    </div>
+  `;
+  const genderBtns = stage.querySelectorAll('.gender-btn');
+  const yearInput = stage.querySelector('#birthYearInput');
+  const nextBtn = stage.querySelector('#nextBtn');
+
+  if(state.gender){ stage.querySelector('.gender-btn[data-g="'+state.gender+'"]').classList.add('selected'); }
+  if(state.birthYear){ yearInput.value = state.birthYear; }
+
+  function checkValid(){
+    const valid = state.gender && state.birthYear && state.birthYear>=1930 && state.birthYear<=2015;
+    nextBtn.classList.toggle('active', !!valid);
+  }
+  genderBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      genderBtns.forEach(function(x){x.classList.remove('selected');});
+      b.classList.add('selected');
+      state.gender = b.dataset.g;
+      checkValid();
+    });
+  });
+  yearInput.addEventListener('input', function(){
+    state.birthYear = parseInt(yearInput.value,10) || null;
+    checkValid();
+  });
+  nextBtn.addEventListener('click', function(){
+    if(!nextBtn.classList.contains('active')) return;
+    state.base = getBaseLife(state.gender, state.birthYear);
+    goto(1);
+  });
+  checkValid();
+}
+
+function renderLikert(q){
+  stage.innerHTML = `
+    <span class="q-kicker">${AREA_ICON[q.area]} ${AREA[q.area]}</span>
+    ${q.tag ? '<div class="q-tag">'+q.tag+'</div>' : ''}
+    <h2 class="q-title"><span class="q-no">${q.id}.</span>${q.text}</h2>
+    <p class="q-sub">가장 가까운 정도를 골라주세요.</p>
+    <div class="opt-list" id="optList"></div>
+    <div class="q-actions">
+      <button class="prev-btn" id="prevBtn">← 이전</button>
+      <button class="next-btn" id="nextBtn">다음 →</button>
+    </div>
+    <div class="check-hint">☑️ 문항을 체크해야 페이지가 넘어갑니다</div>
+  `;
+  const optList = stage.querySelector('#optList');
+  const nextBtn = stage.querySelector('#nextBtn');
+  const prevBtn = stage.querySelector('#prevBtn');
+  const savedVal = state.answers[q.id];
+  const weight = q.weight || 1;
+
+  LIKERT.forEach(function(opt,i){
+    const trueVal = opt.v * weight;
+    const row = document.createElement('div');
+    row.className = 'opt5';
+    if(savedVal !== undefined && Math.abs(savedVal - trueVal) < 0.001) row.classList.add('selected');
+    row.innerHTML = '<span class="opt5-num">'+NUM[i]+'</span><span class="opt5-label">'+opt.label+'</span><span class="opt5-check">✓</span>';
+    row.addEventListener('click', function(){
+      optList.querySelectorAll('.opt5').forEach(function(x){x.classList.remove('selected');});
+      row.classList.add('selected');
+      state.answers[q.id] = trueVal;
+      nextBtn.classList.add('active');
+      updateScore(q.id, trueVal);
+      autoAdvance();
+    });
+    optList.appendChild(row);
+  });
+  if(savedVal !== undefined){ nextBtn.classList.add('active'); updateScore(q.id, savedVal); }
+  else { updateScore(); }
+
+  prevBtn.addEventListener('click', function(){ goto(state.step-1); });
+  nextBtn.addEventListener('click', function(){
+    if(!nextBtn.classList.contains('active')) return;
+    goto(state.step+1);
+  });
+}
+
+function renderChoiceDelta(q){
+  stage.innerHTML = `
+    <span class="q-kicker">${AREA_ICON[q.area]} ${AREA[q.area]}</span>
+    ${q.tag ? '<div class="q-tag">'+q.tag+'</div>' : ''}
+    <h2 class="q-title"><span class="q-no">${q.id}.</span>${q.text}</h2>
+    <p class="q-sub">해당하는 것을 선택해주세요.</p>
+    <div class="opt-list" id="optList"></div>
+    <div class="q-actions">
+      <button class="prev-btn" id="prevBtn">← 이전</button>
+      <button class="next-btn" id="nextBtn">다음 →</button>
+    </div>
+    <div class="check-hint">☑️ 문항을 체크해야 페이지가 넘어갑니다</div>
+  `;
+  const optList = stage.querySelector('#optList');
+  const nextBtn = stage.querySelector('#nextBtn');
+  const prevBtn = stage.querySelector('#prevBtn');
+  const savedVal = state.answers[q.id];
+
+  q.options.forEach(function(opt,i){
+    const row = document.createElement('div');
+    row.className = 'opt5';
+    if(savedVal !== undefined && Math.abs(savedVal - opt.delta) < 0.001) row.classList.add('selected');
+    row.innerHTML = '<span class="opt5-num">'+(NUM[i]||'')+'</span><span class="opt5-label">'+opt.label+'</span><span class="opt5-check">✓</span>';
+    row.addEventListener('click', function(){
+      optList.querySelectorAll('.opt5').forEach(function(x){x.classList.remove('selected');});
+      row.classList.add('selected');
+      state.answers[q.id] = opt.delta;
+      nextBtn.classList.add('active');
+      updateScore(q.id, opt.delta);
+      autoAdvance();
+    });
+    optList.appendChild(row);
+  });
+  if(savedVal !== undefined){ nextBtn.classList.add('active'); updateScore(q.id, savedVal); }
+  else { updateScore(); }
+
+  prevBtn.addEventListener('click', function(){ goto(state.step-1); });
+  nextBtn.addEventListener('click', function(){
+    if(!nextBtn.classList.contains('active')) return;
+    goto(state.step+1);
+  });
+}
+
+function renderKQuestion(q){
+  stage.innerHTML = `
+    <span class="q-kicker">${AREA_ICON[q.area]} ${AREA[q.area]}</span>
+    ${q.tag ? '<div class="q-tag">'+q.tag+'</div>' : ''}
+    <h2 class="q-title"><span class="q-no">${q.id}.</span>${q.text}</h2>
+    <p class="q-sub">해당하는 것을 선택해주세요.</p>
+    <div class="opt-list" id="optList"></div>
+    <div class="q-actions">
+      <button class="prev-btn" id="prevBtn">← 이전</button>
+      <button class="next-btn" id="nextBtn">다음 →</button>
+    </div>
+    <div class="check-hint">☑️ 문항을 체크해야 페이지가 넘어갑니다</div>
+  `;
+  const optList = stage.querySelector('#optList');
+  const nextBtn = stage.querySelector('#nextBtn');
+  const prevBtn = stage.querySelector('#prevBtn');
+  const savedK = state.answers[q.id];
+
+  q.options.forEach(function(opt,i){
+    const row = document.createElement('div');
+    row.className = 'opt5';
+    if(savedK !== undefined && savedK === opt.k) row.classList.add('selected');
+    row.innerHTML = '<span class="opt5-num">'+(NUM[i]||'')+'</span><span class="opt5-label">'+opt.label+'</span><span class="opt5-check">✓</span>';
+    row.addEventListener('click', function(){
+      optList.querySelectorAll('.opt5').forEach(function(x){x.classList.remove('selected');});
+      row.classList.add('selected');
+      state.answers[q.id] = opt.k;
+      nextBtn.classList.add('active');
+      updateScore(q.id, opt.k);
+      autoAdvance();
+    });
+    optList.appendChild(row);
+  });
+  if(savedK !== undefined){ nextBtn.classList.add('active'); updateScore(q.id, savedK); }
+
+  prevBtn.addEventListener('click', function(){ goto(state.step-1); });
+  nextBtn.addEventListener('click', function(){
+    if(!nextBtn.classList.contains('active')) return;
+    goto(state.step+1);
+  });
+}
+
+const NAT_AVG = 83.7, MALE_AVG = 80.8, FEMALE_AVG = 86.6;
+
+function renderResult(){
+  const deltaSum = QUESTIONS.reduce(function(s,q){ return s+(state.answers[q.id]||0); }, 0);
+  const kVals = K_QUESTIONS.map(function(q){ return state.answers[q.id] !== undefined ? state.answers[q.id] : 1.0; });
+  const k = Math.min.apply(null, kVals);
+  const total = state.base + deltaSum*k;
+  const isBelow = total < NAT_AVG;
+  const diff = Math.abs(total - NAT_AVG).toFixed(1);
+
+  const heroIcon = isBelow ? '⚠️' : '✓';
+  const heroClass = isBelow ? 'below' : 'above';
+  const msg = isBelow
+    ? '평균보다 <b>'+diff+'년 낮습니다.</b> 생활습관 개선으로 시간자산을 늘릴 수 있어요.'
+    : '평균보다 <b>'+diff+'년 높습니다.</b> 지금의 좋은 습관을 계속 유지해보세요.';
+
+  const reportHtml =
+    '<div class="result-hero '+heroClass+'">'+heroIcon+'</div>' +
+    '<div class="result-label">나의 예상 기대수명</div>' +
+    '<div class="result-num">'+total.toFixed(1)+'세</div>' +
+    '<div class="result-compare">한국인 평균 기대수명 <b>'+NAT_AVG.toFixed(1)+'세</b> (남성 '+MALE_AVG.toFixed(1)+'세 / 여성 '+FEMALE_AVG.toFixed(1)+'세)</div>' +
+    '<div class="result-source">출처 : 한국인 보건·역학 통계 데이터(보건공단·질병관리청)의 대규모 코호트 역학 데이터와 통계청 생명표 알고리즘(K-LEPA)* 적용</div>' +
+    '<div class="result-msg">' +
+      '<p>'+msg+'</p>' +
+      '<p class="disclaimer">※ 위 통계 알고리즘을 기반으로 한 참고용 추정치이며, 실제 수명을 예측하는 의학적 수치가 아닙니다.</p>' +
+    '</div>' +
+    '<div class="result-tip">' +
+      '<div class="tip-title">💡 인생 2막 설계 포인트</div>' +
+      '<p>기대수명을 알았다면, 남은 시간을 <b>어떻게 채울지</b>가 중요합니다. 은퇴 후 부캐 진단으로 진짜 나를 발견해보세요.</p>' +
+    '</div>';
+
+  stage.innerHTML =
+    '<div class="result-topbar">' +
+      '<div><div class="result-kicker">⏳ 기대수명 진단</div><div class="result-heading">나의 기대수명 결과예요</div></div>' +
+      '<button class="result-close" aria-label="닫기">✕</button>' +
+    '</div>' +
+    reportHtml +
+    '<div class="print-copyright">© 2026 세컨라이프 디자인. JMCARER. All rights reserved.</div>' +
+    '<div class="result-actions">' +
+      '<button class="result-btn" id="retryBtn">↻ 다시 진단하기</button>' +
+      '<div class="result-diag-row">' +
+        '<button class="result-btn primary" id="pdfBtn">🖨️ PDF로 저장하기</button>' +
+        '<button class="result-btn" id="previewBtn2">👁️ 요약페이지 미리보기</button>' +
+      '</div>' +
+      '<button class="result-btn" id="shareBtn">🔗 결과 공유하기</button>' +
+      '<a href="persona-quiz.html" class="result-btn primary">🎭 부캐 진단 해보기 →</a>' +
+      '<a href="index.html" class="result-btn">🏠 홈으로</a>' +
+    '</div>';
+
+  const LANDING_URL = 'index.html';
+
+  async function generateShareCard(){
+    try{ await document.fonts.load('72px "Nanum Brush Script"'); }catch(e){}
+
+    const pal = isBelow
+      ? {base:'#EFF3FB', blobs:['#AFCBEF','#C9E4F0','#E3D6F5']}
+      : {base:'#FDEDF1', blobs:['#F7B8C6','#F5D3A0','#E7B7E0']};
+    const INK = '#2E241C', INK_SOFT = 'rgba(46,36,28,0.62)';
+
+    const W = 720, H = 1280;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = pal.base;
+    ctx.fillRect(0,0,W,H);
+
+    function blob(cx,cy,r,color,alpha){
+      const g = ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+      g.addColorStop(0, color);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    blob(W*0.15, H*0.12, 320, pal.blobs[0], 0.55);
+    blob(W*0.85, H*0.28, 380, pal.blobs[1], 0.45);
+    blob(W*0.25, H*0.7, 400, pal.blobs[2], 0.4);
+    blob(W*0.8, H*0.85, 340, pal.blobs[0], 0.4);
+    blob(W*0.5, H*0.5, 460, pal.blobs[1], 0.22);
+
+    for(let i=0;i<70;i++){
+      const fx = Math.random()*W, fy = H*0.75 + Math.random()*H*0.25;
+      ctx.fillStyle = 'rgba(255,255,255,'+(0.15+Math.random()*0.25)+')';
+      ctx.beginPath(); ctx.arc(fx,fy,Math.random()*1.6+0.4,0,Math.PI*2); ctx.fill();
+    }
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = INK_SOFT;
+    ctx.font = '600 22px Pretendard, sans-serif';
+    ctx.fillText('기대수명 진단 · LIFE EXPECTANCY', W/2, 100);
+
+    ctx.fillStyle = INK;
+    ctx.font = '500 26px Pretendard, sans-serif';
+    ctx.fillText('내가 준비해야 할 시간자산은', W/2, 430);
+    ctx.fillText('약', W/2, 466);
+
+    ctx.font = "88px 'Nanum Brush Script', cursive";
+    ctx.fillText(total.toFixed(1)+'세', W/2, 610);
+
+    ctx.font = '500 24px Pretendard, sans-serif';
+    ctx.fillStyle = INK_SOFT;
+    ctx.fillText('한국인 평균 '+NAT_AVG.toFixed(1)+'세 대비 '+(isBelow?'-':'+')+diff+'년', W/2, 700);
+
+    ctx.font = '400 20px Pretendard, sans-serif';
+    ctx.fillStyle = INK_SOFT;
+    ctx.fillText(isBelow ? '생활습관 개선으로 늘릴 수 있어요' : '지금의 좋은 습관을 계속 유지해보세요', W/2, 1000);
+
+    ctx.font = '600 18px Pretendard, sans-serif';
+    ctx.fillStyle = '#C94764';
+    ctx.fillText('#기대수명진단  #시간자산  #세컨라이프디자인', W/2, 1060);
+
+    ctx.strokeStyle = 'rgba(46,36,28,0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(W/2, 1170, 150, 40, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.font = '700 22px Pretendard, sans-serif';
+    ctx.fillStyle = INK;
+    ctx.fillText('🌿 세컨라이프 디자인', W/2, 1178);
+
+    ctx.font = '400 14px Pretendard, sans-serif';
+    ctx.fillStyle = 'rgba(46,36,28,0.45)';
+    ctx.fillText('© 2026 세컨라이프 디자인. JMCARER. All rights reserved.', W/2, 1250);
+
+    return canvas;
+  }
+
+  async function openShareCard(){
+    const canvas = await generateShareCard();
+    const dataUrl = canvas.toDataURL('image/png');
+    const overlay = document.createElement('div');
+    overlay.className = 'preview-overlay';
+    overlay.innerHTML =
+      '<div class="preview-sheet share-sheet">' +
+        '<div class="preview-topbar">' +
+          '<span>🔗 결과 공유 카드</span>' +
+          '<button class="preview-close" id="shareClose">✕</button>' +
+        '</div>' +
+        '<img src="'+dataUrl+'" class="share-card-img" alt="기대수명 결과 카드">' +
+        '<a href="'+dataUrl+'" download="기대수명-결과.png" class="result-btn primary preview-print-btn" id="shareDownloadBtn">⬇️ 이미지 다운로드</a>' +
+        '<button class="result-btn share-link-btn" id="shareLinkBtn">🔗 진단 링크 복사하기</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('#shareClose').addEventListener('click', function(){ overlay.remove(); });
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+    overlay.querySelector('#shareLinkBtn').addEventListener('click', function(){
+      navigator.clipboard.writeText(LANDING_URL).then(function(){
+        overlay.querySelector('#shareLinkBtn').textContent = '✅ 링크가 복사되었어요';
+      });
+    });
+
+    if(navigator.share){
+      canvas.toBlob(function(blob){
+        const file = new File([blob], 'expectancy-result.png', {type:'image/png'});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          const shareBtnEl = document.createElement('button');
+          shareBtnEl.className = 'result-btn preview-print-btn';
+          shareBtnEl.textContent = '📤 바로 공유하기';
+          shareBtnEl.addEventListener('click', function(){
+            navigator.share({
+              files:[file],
+              title:'나의 기대수명 진단 결과',
+              text:'나의 예상 기대수명 '+total.toFixed(1)+'세! 세컨라이프 디자인에서 나도 확인해보기: '+LANDING_URL,
+              url: LANDING_URL
+            });
+          });
+          overlay.querySelector('.preview-sheet').appendChild(shareBtnEl);
+        }
+      });
+    }
+  }
+
+  function openSummaryPreview(){
+    const overlay = document.createElement('div');
+    overlay.className = 'preview-overlay';
+    overlay.innerHTML =
+      '<div class="preview-sheet">' +
+        '<div class="preview-topbar">' +
+          '<span>👁️ 요약페이지 미리보기</span>' +
+          '<button class="preview-close" id="previewClose">✕</button>' +
+        '</div>' +
+        '<div class="preview-compact">'+reportHtml+'</div>' +
+        '<div class="preview-copyright">© 2026 세컨라이프 디자인. JMCARER. All rights reserved.</div>' +
+        '<button class="result-btn primary preview-print-btn" id="previewPrintBtn">🖨️ 지금 PDF로 저장하기</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('#previewClose').addEventListener('click', function(){ overlay.remove(); });
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+    overlay.querySelector('#previewPrintBtn').addEventListener('click', function(){ window.print(); });
+  }
+
+  stage.querySelector('#pdfBtn').addEventListener('click', function(){
+    window.print();
+  });
+  stage.querySelector('#previewBtn2').addEventListener('click', openSummaryPreview);
+  stage.querySelector('#shareBtn').addEventListener('click', openShareCard);
+
+  stage.querySelector('#retryBtn').addEventListener('click', function(){
+    state = { step:0, gender:null, birthYear:null, base:null, answers:{} };
+    goto(0);
+  });
+}
+
+backBtn.addEventListener('click', function(){
+  if(state.step>0) goto(state.step-1);
+});
+
+goto(0);
+if(new URLSearchParams(location.search).get('preview')==='1'){ previewBtn.click(); }
+</script>
+
+<div class="site-footer">© 2026 세컨라이프 디자인. JMCARER. All rights reserved.</div>
+
+</body>
+</html>

@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>여가 부캐 진단 | 세컨라이프 디자인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --amber-l:#FFF4E0;
+    --amber-m:#FFE2AE;
+    --amber-s:#FFC96B;
+    --amber:#E8A23A;
+    --amber-deep:#B9741C;
+    --cream:#FFFAF0;
+    --ink:#3A2E1D;
+    --ink-soft:#8A7554;
+    --line:#F0DFB8;
+    --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    background:linear-gradient(160deg, var(--amber-l) 0%, var(--amber-m) 55%, var(--amber-s) 100%);
+    min-height:100vh;
+    display:flex;flex-direction:column;
+    -webkit-font-smoothing:antialiased;
+  }
+  h2{font-family:var(--font);font-weight:700;letter-spacing:-0.01em;}
+  a,button{text-decoration:none;color:inherit;font-family:var(--font);}
+
+  .topbar{
+    display:flex;align-items:center;gap:14px;
+    padding:20px 24px 0;max-width:640px;margin:0 auto;width:100%;
+  }
+  .back-btn{
+    width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.7);
+    display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--amber-deep);flex:none;
+    border:none;cursor:pointer;transition:opacity .15s ease;
+  }
+  .back-btn.disabled{opacity:0.35;pointer-events:none;}
+  .home-btn{
+    height:44px;padding:0 16px;border-radius:999px;background:var(--amber-deep);
+    display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:800;color:#fff;flex:none;
+    border:none;cursor:pointer;box-shadow:0 8px 18px rgba(185,116,28,0.30);white-space:nowrap;
+  }
+  @media (max-width:480px){ .home-btn .home-text{display:none;} .home-btn{padding:0;width:44px;justify-content:center;} }
+  .progress-track{flex:1;height:8px;background:rgba(255,255,255,0.6);border-radius:999px;overflow:hidden;}
+  .progress-fill{height:100%;width:0%;background:var(--amber-deep);border-radius:999px;transition:width .3s ease;}
+  .q-count{font-size:14px;font-weight:800;color:#5C4520;flex:none;min-width:52px;text-align:right;}
+
+  .domain-row{
+    max-width:640px;margin:0 auto;width:100%;
+    padding:14px 24px 0;
+    display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
+  }
+  .domain-pill{
+    background:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.9);
+    border-radius:999px;padding:9px 18px;font-size:13px;font-weight:800;color:var(--amber-deep);
+    text-align:center;
+  }
+
+  .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:18px 24px 40px;}
+  .q-card{
+    background:#fff;border-radius:28px;max-width:480px;width:100%;
+    padding:32px 28px 26px;
+    box-shadow:0 24px 50px rgba(185,116,28,0.18);
+  }
+  .q-kicker{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--amber-l);color:var(--amber-deep);font-size:12.5px;font-weight:800;
+    padding:6px 14px;border-radius:999px;margin-bottom:16px;
+  }
+  .q-title{font-size:19px;line-height:1.5;margin-bottom:22px;color:var(--ink);}
+  .q-no{color:var(--amber-deep);font-weight:800;margin-right:6px;}
+
+  .opt-list{display:flex;flex-direction:column;gap:10px;margin-bottom:6px;}
+  .opt5{
+    display:flex;align-items:center;gap:12px;
+    border:1.5px solid var(--line);border-radius:16px;
+    padding:13px 16px;cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .opt5:hover{border-color:var(--amber-s);background:var(--amber-l);}
+  .opt5.selected{border-color:var(--amber-deep);background:var(--amber-l);}
+  .opt5-num{font-weight:800;color:var(--ink-soft);font-size:15px;flex:none;width:20px;text-align:center;}
+  .opt5.selected .opt5-num{color:var(--amber-deep);}
+  .opt5-label{flex:1;font-size:14.5px;font-weight:700;color:var(--ink);}
+  .opt5-check{opacity:0;color:var(--amber-deep);font-weight:800;font-size:15px;}
+  .opt5.selected .opt5-check{opacity:1;}
+
+  .q-actions{margin-top:20px;display:flex;gap:10px;}
+  .check-hint{
+    display:flex;align-items:center;gap:6px;justify-content:center;
+    font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-top:14px;
+  }
+  .next-btn{
+    display:flex;align-items:center;justify-content:center;
+    background:var(--amber-deep);color:#fff;font-size:15.5px;font-weight:800;
+    padding:14px 0;min-height:48px;border-radius:999px;flex:1;
+    box-shadow:0 12px 26px rgba(185,116,28,0.30);
+    opacity:0.4;pointer-events:none;transition:opacity .15s ease;
+    border:none;cursor:pointer;
+  }
+  .next-btn.active{opacity:1;pointer-events:auto;}
+  .prev-btn{
+    display:flex;align-items:center;justify-content:center;
+    background:#fff;color:var(--ink-soft);font-size:15.5px;font-weight:800;
+    padding:14px 0;min-height:48px;border-radius:999px;flex:1;
+    border:1.5px solid var(--line);cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .prev-btn:hover{border-color:var(--amber-s);color:var(--amber-deep);}
+
+  .result-topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;}
+  .result-kicker{font-size:12.5px;font-weight:800;color:var(--amber-deep);margin-bottom:6px;}
+  .result-heading{font-size:19px;font-weight:700;color:var(--ink);font-family:var(--font);}
+  .result-close{
+    width:36px;height:36px;border-radius:50%;background:var(--cream);
+    display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink-soft);
+    flex:none;border:none;cursor:pointer;
+  }
+  .result-hero{
+    min-width:64px;height:64px;padding:0 10px;border-radius:32px;background:var(--amber-l);
+    display:flex;align-items:center;justify-content:center;font-size:26px;margin:6px auto 14px;
+    width:fit-content;gap:2px;
+  }
+  .result-label{text-align:center;font-size:13px;color:var(--ink-soft);font-weight:700;margin-bottom:6px;}
+  .result-persona{font-family:'Nanum Brush Script', cursive;font-size:34px;font-weight:400;color:var(--amber-deep);text-align:center;margin-bottom:16px;line-height:1.3;}
+  .persona-sub{font-size:15px;font-weight:700;color:var(--ink-soft);display:inline-block;padding-left:1.4em;font-family:var(--font);}
+
+  .combined-feedback-box{
+    background:var(--amber-deep);color:#fff;border-radius:16px;padding:18px 20px;margin-bottom:20px;
+  }
+  .combined-feedback-box .tip-title{font-size:14px;font-weight:800;margin-bottom:10px;}
+  .combined-feedback-box p{font-size:13px;line-height:1.65;color:#fff;margin-bottom:10px;}
+  .combined-feedback-box p:last-child{margin-bottom:0;}
+  .combined-feedback-box b{color:#FFEBC7;}
+  .feedback-score{font-size:12.5px;font-weight:700;background:rgba(255,255,255,0.15);border-radius:10px;padding:8px 12px;display:inline-block;}
+  .feedback-tags{font-size:12px;color:#FFEBC7;font-weight:700;letter-spacing:0.02em;}
+
+  .explainer-box{background:var(--cream);border-radius:16px;padding:18px 20px;margin-bottom:22px;}
+  .explainer-lead{font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:12px;line-height:1.55;}
+  .explainer-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+  .explainer-list li{font-size:12.5px;color:var(--ink-soft);line-height:1.55;padding-left:14px;position:relative;}
+  .explainer-list li::before{content:'·';position:absolute;left:0;color:var(--amber-deep);font-weight:800;}
+  .explainer-list li b{color:var(--amber-deep);}
+  .explainer-question{
+    font-size:13px;color:var(--amber-deep);font-weight:700;line-height:1.6;
+    border-top:1px dashed var(--line);padding-top:12px;margin:0;
+  }
+
+  .persona-desc-box{background:var(--cream);border-radius:16px;padding:16px 18px;margin-bottom:16px;}
+  .persona-desc-box p{font-size:13.5px;color:var(--ink);line-height:1.65;}
+  .desc-title{font-size:17.5px;font-weight:800;color:var(--amber-deep);margin-bottom:10px;text-align:center;}
+  .desc-concept{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;}
+  .desc-traits{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+  .desc-traits li{font-size:12.5px;color:var(--ink-soft);padding-left:12px;position:relative;}
+  .desc-traits li::before{content:'-';position:absolute;left:0;color:var(--amber-deep);}
+  .desc-feedback{font-size:13px;color:var(--ink);line-height:1.6;border-top:1px dashed var(--line);padding-top:10px;}
+  .desc-feedback b{color:var(--amber-deep);}
+
+  .activity-box{background:#FFF3E9;border-radius:16px;padding:16px 18px;margin-bottom:18px;}
+  .activity-box .tip-title{font-size:13.5px;font-weight:800;color:#95610F;margin-bottom:10px;}
+  .activity-chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .activity-chip{
+    background:#fff;border:1.5px solid #F3C89A;color:#8A5B23;font-size:12.5px;font-weight:700;
+    padding:7px 13px;border-radius:999px;
+  }
+
+  .matrix-wrap{overflow-x:auto;margin-bottom:8px;-webkit-overflow-scrolling:touch;}
+  .persona-matrix{border-collapse:collapse;width:100%;min-width:460px;}
+  .persona-matrix th, .persona-matrix td{
+    border:1px solid var(--line);padding:8px 4px;text-align:center;font-size:11px;font-weight:700;color:var(--ink);
+    word-break:keep-all;
+  }
+  .persona-matrix thead th{background:#E8ECFB;color:#4568DC;font-size:11.5px;padding:8px 4px;}
+  .persona-matrix tbody th{background:#E8ECFB;color:#4568DC;font-size:11.5px;width:56px;white-space:nowrap;}
+  .persona-matrix td.hit{background:#4568DC;color:#fff;font-weight:800;border-radius:6px;position:relative;}
+  .matrix-caption{font-size:11.5px;color:var(--ink-soft);text-align:center;margin-bottom:20px;line-height:1.5;}
+
+  .part-heading{
+    display:inline-block;font-size:13px;font-weight:800;color:#fff;
+    margin:18px 0 12px;padding:7px 16px;border-radius:999px;
+  }
+  .part-heading.p1{background:var(--amber-deep);}
+  .part-heading.p2{background:#3E8F7D;}
+  .part-heading.p3{background:#4568DC;}
+  .factor-bar-item{margin-bottom:14px;}
+  .factor-bar-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px;}
+  .factor-bar-top .label{font-weight:800;color:var(--ink);}
+  .factor-bar-top .value{color:var(--amber-deep);font-weight:800;}
+  .factor-bar-top .value.p2{color:#3E8F7D;}
+  .factor-bar-top .label.top .badge{
+    background:var(--amber-deep);color:#fff;font-size:10px;font-weight:800;
+    padding:2px 7px;border-radius:999px;margin-left:6px;
+  }
+  .factor-bar-top .label.top .badge.p2{background:#3E8F7D;}
+  .factor-bar-track{height:9px;background:var(--amber-l);border-radius:999px;overflow:hidden;}
+  .factor-bar-track.p2{background:#EAF7F1;}
+  .factor-bar-fill{height:100%;background:linear-gradient(90deg,var(--amber-s),var(--amber-deep));border-radius:999px;}
+  .factor-bar-fill.p2{background:linear-gradient(90deg,#8FBF9B,#3E8F7D);}
+
+  .result-msg{background:var(--cream);border-radius:16px;padding:16px 18px;margin:18px 0 24px;}
+  .result-msg p{font-size:13px;color:var(--ink-soft);line-height:1.6;}
+
+  .result-actions{display:flex;flex-direction:column;gap:10px;}
+  .result-btn{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    min-height:48px;border-radius:999px;font-size:14.5px;font-weight:800;
+    border:1.5px solid var(--line);color:var(--ink);
+  }
+  .result-btn.primary{background:var(--amber-deep);color:#fff;border:none;}
+  .result-diag-row{display:flex;gap:10px;}
+  .result-diag-row .result-btn{flex:1;}
+
+  @page{ margin:6mm; }
+  .preview-overlay{
+    position:fixed;inset:0;background:rgba(58,46,29,0.55);z-index:300;
+    display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 16px;
+  }
+  .preview-sheet{
+    background:#fff;border-radius:20px;max-width:480px;width:100%;padding:22px 20px 26px;
+    box-shadow:0 24px 60px rgba(0,0,0,0.3);
+  }
+  .preview-topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:14px;font-weight:800;color:var(--amber-deep);margin-bottom:14px;
+  }
+  .preview-close{
+    width:32px;height:32px;border-radius:50%;background:var(--amber-l);border:none;
+    color:var(--amber-deep);font-weight:800;cursor:pointer;
+  }
+  .preview-compact .desc-concept, .preview-compact .desc-traits{display:none;}
+  .preview-compact .matrix-caption{display:none;}
+  .preview-print-btn{width:100%;margin-top:16px;}
+  .preview-copyright{text-align:center;font-size:11px;color:#999;margin-top:14px;}
+  .print-copyright{display:none;}
+  .share-sheet{max-width:340px;}
+  .share-card-img{width:100%;border-radius:14px;display:block;}
+  .share-link-btn{width:100%;margin-top:10px;}
+
+  @media print{
+    .preview-overlay{display:none !important;}
+  }
+  @media print{
+    html,body{zoom:0.62;}
+    .topbar, .domain-row, .result-actions{display:none !important;}
+    body{background:#fff !important;}
+    .stage{padding:0 !important;}
+    .q-card{box-shadow:none !important;border:none !important;max-width:100% !important;}
+    .desc-concept, .desc-traits{display:none !important;}
+    .matrix-caption{display:none !important;}
+    .persona-desc-box, .combined-feedback-box, .explainer-box, .activity-box{margin-bottom:8px !important;padding:10px 12px !important;}
+    .factor-bar-item{margin-bottom:8px !important;}
+    .part-heading{margin:10px 0 6px !important;}
+    .print-copyright{display:block !important;text-align:center;font-size:10px;color:#999;margin-top:12px;}
+  }
+
+  @media (max-width:520px){
+    .q-card{padding:26px 22px 22px;border-radius:24px;}
+    .q-title{font-size:17.5px;}
+    .q-kicker{font-size:10.5px;padding:5px 10px;}
+    .domain-pill{font-size:11px;padding:7px 12px;}
+  }
+  .site-footer{text-align:center;font-size:11px;color:#8A7554;padding:14px 12px calc(14px + env(safe-area-inset-bottom));flex:none;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" id="backBtn" aria-label="이전">←</button>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="q-count" id="qCount">시작</div>
+  <a class="home-btn" href="index.html" aria-label="홈으로">🏠 <span class="home-text">홈으로 가기</span></a>
+</div>
+
+<div class="domain-row" id="domainRow" style="display:none;">
+  <div class="domain-pill" id="domainPill">-</div>
+  <button class="domain-pill" id="previewBtn" style="cursor:pointer;border:none;">🔍 결과 미리보기</button>
+</div>
+
+<div class="stage"><div class="q-card" id="qCard"></div></div>
+
+<script>
+const FACTORS_PART1 = [
+  {key:'freedom', label:'자유 (Freedom)', icon:'🕊️'},
+  {key:'variety', label:'변화와 자극 (Variety)', icon:'🌟'},
+  {key:'connection', label:'관계와 교감 (Connection)', icon:'🤝'},
+  {key:'achievement', label:'성장과 성취 (Achievement)', icon:'🏆'},
+  {key:'contribution', label:'의미와 기여 (Contribution)', icon:'💎'}
+];
+const FACTORS_PART2 = [
+  {key:'V', label:'시각적 환경 (Visual)', icon:'👁️'},
+  {key:'A', label:'청각적 환경 (Auditory)', icon:'👂'},
+  {key:'K', label:'신체·촉각 환경 (Kinesthetic)', icon:'✋'},
+  {key:'OG', label:'미각·후각 환경 (O/G)', icon:'👃'},
+  {key:'Ad', label:'내면언어·논리 환경 (Ad)', icon:'🧠'}
+];
+const ALL_FACTORS = {};
+FACTORS_PART1.concat(FACTORS_PART2).forEach(function(f){ ALL_FACTORS[f.key] = f; });
+
+const SCALE = [
+  {v:5,label:'매우 그렇다'},
+  {v:4,label:'그런 편이다'},
+  {v:3,label:'보통이다'},
+  {v:2,label:'그렇지 않은 편이다'},
+  {v:1,label:'전혀 그렇지 않다'}
+];
+const NUM = ['①','②','③','④','⑤'];
+
+const QUESTIONS = [
+  {id:1,part:1,factor:'freedom',reverse:false,text:'여가 시간만큼은 내 마음대로 시간을 사용할 수 있을 때 만족스럽다.'},
+  {id:2,part:1,factor:'freedom',reverse:false,text:'정해진 규칙이나 일정에 얽매이지 않는 활동을 선호한다.'},
+  {id:3,part:1,factor:'freedom',reverse:false,text:'누구의 간섭 없이 혼자 결정하고 움직일 수 있을 때 편안함을 느낀다.'},
+  {id:4,part:1,factor:'freedom',reverse:false,text:'즉흥적으로 계획을 바꾸거나 새로운 선택을 하는 것을 즐긴다.'},
+
+  {id:5,part:1,factor:'variety',reverse:false,text:'새로운 장소를 방문하거나 새로운 경험을 하는 것이 즐겁다.'},
+  {id:6,part:1,factor:'variety',reverse:false,text:'익숙한 일상보다 새로운 활동을 시도할 때 에너지가 생긴다.'},
+  {id:7,part:1,factor:'variety',reverse:false,text:'평소 해보지 않았던 취미나 경험에 관심이 많다.'},
+  {id:8,part:1,factor:'variety',reverse:false,text:'반복되는 생활에 변화를 주는 활동을 선호한다.'},
+
+  {id:9,part:1,factor:'connection',reverse:false,text:'소중한 사람과 함께하는 시간이 여가의 중요한 즐거움이다.'},
+  {id:10,part:1,factor:'connection',reverse:false,text:'좋은 경험은 혼자보다 다른 사람과 나누고 싶다.'},
+  {id:11,part:1,factor:'connection',reverse:false,text:'사람들과 의미 있는 대화를 나눌 때 만족감을 느낀다.'},
+  {id:12,part:1,factor:'connection',reverse:false,text:'함께 웃고 공감하는 시간이 삶의 활력이 된다.'},
+
+  {id:13,part:1,factor:'achievement',reverse:false,text:'여가 시간에도 새로운 것을 배우는 것이 즐겁다.'},
+  {id:14,part:1,factor:'achievement',reverse:false,text:'목표를 세우고 달성하는 과정에서 보람을 느낀다.'},
+  {id:15,part:1,factor:'achievement',reverse:false,text:'실력이 향상되는 것을 확인할 때 만족감이 크다.'},
+  {id:16,part:1,factor:'achievement',reverse:false,text:'결과물이나 성과가 남는 활동을 선호한다.'},
+
+  {id:17,part:1,factor:'contribution',reverse:false,text:'나의 활동이 다른 사람에게 도움이 될 때 의미를 느낀다.'},
+  {id:18,part:1,factor:'contribution',reverse:false,text:'단순한 즐거움보다 보람 있는 활동에 끌린다.'},
+  {id:19,part:1,factor:'contribution',reverse:false,text:'사회나 공동체에 긍정적인 영향을 줄 수 있는 활동에 관심이 있다.'},
+  {id:20,part:1,factor:'contribution',reverse:false,text:'내가 중요하게 생각하는 가치와 연결된 활동을 선호한다.'},
+
+  {id:21,part:2,factor:'V',reverse:false,text:'새로운 장소에 가면 가장 먼저 주변 풍경과 공간을 살펴본다.'},
+  {id:22,part:2,factor:'V',reverse:false,text:'아름다운 경치나 시각적으로 매력적인 환경에서 만족감을 느낀다.'},
+  {id:23,part:2,factor:'V',reverse:false,text:'공간의 분위기와 인테리어가 만족도에 큰 영향을 준다.'},
+  {id:24,part:2,factor:'V',reverse:false,text:'사진을 찍거나 멋진 장면을 감상하는 것을 즐긴다.'},
+
+  {id:25,part:2,factor:'A',reverse:false,text:'조용하고 안정적인 소리 환경에서 편안함을 느낀다.'},
+  {id:26,part:2,factor:'A',reverse:false,text:'음악이나 자연의 소리가 기분에 큰 영향을 준다.'},
+  {id:27,part:2,factor:'A',reverse:false,text:'사람의 말투와 목소리에 민감한 편이다.'},
+  {id:28,part:2,factor:'A',reverse:false,text:'좋은 소리를 들을 때 스트레스가 줄어든다.'},
+
+  {id:29,part:2,factor:'K',reverse:false,text:'몸을 움직이는 활동을 할 때 활력이 생긴다.'},
+  {id:30,part:2,factor:'K',reverse:false,text:'직접 체험하거나 손으로 해보는 활동을 좋아한다.'},
+  {id:31,part:2,factor:'K',reverse:false,text:'생각이 많을 때 몸을 움직이면 마음이 정리된다.'},
+  {id:32,part:2,factor:'K',reverse:false,text:'편안한 촉감이나 신체적 안락함이 중요하다.'},
+
+  {id:33,part:2,factor:'OG',reverse:false,text:'맛있는 음식은 여가의 중요한 즐거움이다.'},
+  {id:34,part:2,factor:'OG',reverse:false,text:'특정한 향기가 기분 전환에 도움이 된다.'},
+  {id:35,part:2,factor:'OG',reverse:false,text:'여행이나 장소를 떠올릴 때 냄새나 맛이 기억나는 편이다.'},
+  {id:36,part:2,factor:'OG',reverse:false,text:'음식과 향을 즐기는 경험을 중요하게 생각한다.'},
+
+  {id:37,part:2,factor:'Ad',reverse:false,text:'혼자 생각을 정리하는 시간을 좋아한다.'},
+  {id:38,part:2,factor:'Ad',reverse:false,text:'새로운 정보를 배우고 이해하는 과정이 즐겁다.'},
+  {id:39,part:2,factor:'Ad',reverse:false,text:'글을 쓰거나 기록하면서 생각을 정리하는 편이다.'},
+  {id:40,part:2,factor:'Ad',reverse:false,text:'복잡한 문제를 분석하고 이해하는 활동에 흥미를 느낀다.'}
+];
+const TOTAL = QUESTIONS.length;
+
+let state = { step:1, answers:{} };
+
+const stage = document.getElementById('qCard');
+const progressFill = document.getElementById('progressFill');
+const qCount = document.getElementById('qCount');
+const backBtn = document.getElementById('backBtn');
+const domainRow = document.getElementById('domainRow');
+const domainPill = document.getElementById('domainPill');
+const previewBtn = document.getElementById('previewBtn');
+previewBtn.addEventListener('click', function(){
+  QUESTIONS.forEach(function(q){
+    if(state.answers[q.id] === undefined){
+      state.answers[q.id] = Math.floor(Math.random()*5)+1;
+    }
+  });
+  goto(TOTAL+1);
+});
+
+function goto(step){
+  state.step = step;
+  render();
+  window.scrollTo({top:0});
+}
+function autoAdvance(){
+  const step = state.step;
+  setTimeout(function(){
+    if(state.step === step){ goto(step+1); }
+  }, 320);
+}
+
+function topPartLabel(part){
+  return '🎭 여가 부캐 진단(여가자산)';
+}
+function cardPartLabel(part){
+  return part===1 ? '🎯 PART1_Core Values' : '🌈 PART2_NLP Sense Interface';
+}
+
+function render(){
+  const step = state.step;
+  backBtn.classList.toggle('disabled', step<=1);
+
+  if(step>=1 && step<=TOTAL){
+    const q = QUESTIONS[step-1];
+    const f = ALL_FACTORS[q.factor];
+    qCount.textContent = step+' / '+TOTAL;
+    progressFill.style.width = (step/TOTAL*100)+'%';
+    domainRow.style.display = 'flex';
+    domainPill.textContent = topPartLabel(q.part);
+    renderQuestion(q);
+  } else {
+    qCount.textContent = '완료';
+    progressFill.style.width = '100%';
+    domainRow.style.display = 'none';
+    renderResult();
+  }
+}
+
+function renderQuestion(q){
+  const f = ALL_FACTORS[q.factor];
+  const savedVal = state.answers[q.id];
+
+  stage.innerHTML = `
+    <span class="q-kicker">${cardPartLabel(q.part)}</span>
+    <h2 class="q-title"><span class="q-no">${q.id}.</span>${q.text}</h2>
+    <div class="opt-list" id="optList"></div>
+    <div class="q-actions">
+      <button class="prev-btn" id="prevBtn">← 이전</button>
+      <button class="next-btn ${savedVal!==undefined?'active':''}" id="nextBtn">다음 →</button>
+    </div>
+    <div class="check-hint">☑️ 문항을 체크해야 페이지가 넘어갑니다</div>
+  `;
+  const optList = stage.querySelector('#optList');
+  const nextBtn = stage.querySelector('#nextBtn');
+  const prevBtn = stage.querySelector('#prevBtn');
+
+  SCALE.forEach(function(opt,i){
+    const row = document.createElement('div');
+    row.className = 'opt5';
+    if(savedVal !== undefined && savedVal === opt.v) row.classList.add('selected');
+    row.innerHTML = '<span class="opt5-num">'+NUM[i]+'</span><span class="opt5-label">'+opt.label+'</span><span class="opt5-check">✓</span>';
+    row.addEventListener('click', function(){
+      optList.querySelectorAll('.opt5').forEach(function(x){x.classList.remove('selected');});
+      row.classList.add('selected');
+      state.answers[q.id] = opt.v;
+      nextBtn.classList.add('active');
+      autoAdvance();
+    });
+    optList.appendChild(row);
+  });
+
+  prevBtn.addEventListener('click', function(){ if(state.step>1) goto(state.step-1); });
+  nextBtn.addEventListener('click', function(){
+    if(!nextBtn.classList.contains('active')) return;
+    goto(state.step+1);
+  });
+}
+
+function factorScore(factorKey){
+  const qs = QUESTIONS.filter(function(q){ return q.factor===factorKey; });
+  let sum = 0, count = 0;
+  qs.forEach(function(q){
+    const raw = state.answers[q.id];
+    if(raw !== undefined){
+      sum += q.reverse ? (6 - raw) : raw;
+      count++;
+    }
+  });
+  return { score:sum, max:count*5 };
+}
+function normalizeScore(raw){
+  return Math.round((raw-4)/16*100);
+}
+
+const VALUE_TYPE_NAME = {
+  freedom:'자유·여유형', variety:'호기심·탐험형', connection:'관계·교감형',
+  achievement:'성장·성취형', contribution:'가치·기여형'
+};
+const VALUE_ACTION = {
+  freedom:'스스로 선택하고 자유롭게 움직일 때',
+  variety:'새로움과 변화를 마주할 때',
+  connection:'사람과 진심으로 연결될 때',
+  achievement:'배움과 발전을 통해',
+  contribution:'의미와 기여가 있을 때'
+};
+const VALUE_TRAIT_PHRASE = {
+  freedom:'자유롭게 선택할 수 있을 때 더 큰 힘을 얻습니다',
+  variety:'새로운 자극이 있을 때 더 활력을 느낍니다',
+  connection:'사람들과 함께할 때 더 큰 즐거움을 느낍니다',
+  achievement:'스스로 성장하고 있다는 확신이 있을 때 안정감을 느낍니다',
+  contribution:'의미 있는 목표가 있을 때 더 몰입합니다'
+};
+
+const SENSE_TYPE_NAME = {
+  V:'관찰·심미형', A:'공감·리듬형', K:'활동·체감형', OG:'풍미·감각형', Ad:'사색·전략형'
+};
+const SENSE_ACTION = {
+  V:'눈으로 보고 담으며 에너지를 얻으며',
+  A:'소리와 리듬 속에서 에너지를 얻으며',
+  K:'몸을 움직이고 체험하며 에너지를 얻으며',
+  OG:'맛과 향을 느끼며 에너지를 얻으며',
+  Ad:'생각을 정리하고 의미를 발견하는 과정에서 에너지를 얻으며'
+};
+const SENSE_TRAIT_PHRASE = {
+  V:'시각적 정보 활용 능력이 높습니다',
+  A:'소리와 목소리의 미묘한 차이를 잘 캐치합니다',
+  K:'몸으로 직접 부딪히며 배우는 것을 좋아합니다',
+  OG:'맛과 향의 디테일을 세심하게 느낍니다',
+  Ad:'생각을 논리적으로 정리하는 데 강합니다'
+};
+
+const PERSONA_TABLE = {
+  freedom:{
+    V:{name:'여행가', activities:['캠핑','드라이브','사진','풍경감상']},
+    A:{name:'방랑자', activities:['야외 음악 감상','드라이브','라디오 즐기기','자연 소리 명상']},
+    K:{name:'모험가', activities:['등산','캠핑','자전거 여행','즉흥 나들이']},
+    OG:{name:'식도락가', activities:['맛집 투어','로컬푸드 체험','홈카페 만들기','와인 즐기기']},
+    Ad:{name:'사색가', activities:['혼자 여행 일기 쓰기','카페 작업','철학책 읽기','블로그 기록']}
+  },
+  variety:{
+    V:{name:'크리에이터', activities:['사진·영상 촬영','전시회 투어','인테리어 바꾸기','SNS 콘텐츠 만들기']},
+    A:{name:'음악애호가(플리 큐레이터)', activities:['새 음악 탐색','콘서트 관람','악기 배우기','팟캐스트 만들기']},
+    K:{name:'체험가', activities:['클라이밍','서핑','댄스','새 스포츠 도전']},
+    OG:{name:'미식가', activities:['이색 맛집 탐방','쿠킹 클래스','향 만들기','세계 요리 도전']},
+    Ad:{name:'탐구가', activities:['새 분야 독서','온라인 강의 수강','신기술 학습','브레인스토밍 모임']}
+  },
+  connection:{
+    V:{name:'스토리텔러', activities:['가족 앨범 만들기','함께 사진 찍기','영화 모임','추억 앨범 정리']},
+    A:{name:'소통가', activities:['모임','커뮤니티','강의','음악 감상']},
+    K:{name:'동행자', activities:['함께 운동하기','가족과 등산','함께 요리하기','봉사활동']},
+    OG:{name:'홈파티 호스트(집밥나눔)', activities:['함께 식사하기','집에서 베이킹 나눔','차 한잔 모임','다과 모임']},
+    Ad:{name:'멘토', activities:['독서 모임','스터디 그룹','상담·코칭','온라인 토론 모임']}
+  },
+  achievement:{
+    V:{name:'아티스트', activities:['그림·캘리그라피','사진 작품 활동','인테리어 스타일링','포트폴리오 만들기']},
+    A:{name:'연주가', activities:['악기 연주','보컬 레슨','작곡하기','오디오북 강의 듣기']},
+    K:{name:'도전가', activities:['마라톤','헬스 PT','자격증 실기','체력 테스트 도전']},
+    OG:{name:'요리연구가', activities:['요리 자격증','베이킹 클래스','소믈리에 과정','레시피 개발']},
+    Ad:{name:'전략가', activities:['독서','글쓰기','연구','자격증','투자공부']}
+  },
+  contribution:{
+    V:{name:'기록가', activities:['사진 기록 봉사','다큐멘터리 감상','캠페인 디자인','전시 재능기부']},
+    A:{name:'강연가', activities:['재능기부 강의','팟캐스트 만들기','시니어 라디오','음악 봉사']},
+    K:{name:'봉사활동가', activities:['환경 정화','재능 봉사(목공 등)','지역 스포츠 지도','걷기 캠페인']},
+    OG:{name:'나눔요리사', activities:['반찬 나눔 봉사','푸드뱅크 활동','공정무역 카페 탐방','로컬푸드 장터']},
+    Ad:{name:'지식 나눔가', activities:['재능기부 강의안 만들기','사회 이슈 리서치','글쓰기 재능기부','시니어 멘토링']}
+  }
+};
+
+const VALUE_CONCEPT = {
+  freedom:'스스로 선택하고 통제할 수 있는 경험을 중요하게 여기는 정도',
+  variety:'새로운 경험과 변화를 추구하는 정도',
+  connection:'사람과의 정서적 연결을 중요하게 여기는 정도',
+  achievement:'배움과 발전을 통해 만족을 얻는 정도',
+  contribution:'사회적 가치와 보람을 중요하게 여기는 정도'
+};
+const VALUE_TRAITS = {
+  freedom:['자유로운 일정과 선택을 선호합니다','규칙이나 통제에 답답함을 느낍니다','즉흥적인 결정을 즐깁니다'],
+  variety:['새로운 자극과 경험을 추구합니다','반복되는 일상에 쉽게 지루함을 느낍니다','낯선 환경에 대한 호기심이 큽니다'],
+  connection:['사람과의 교감에서 에너지를 얻습니다','혼자보다 함께하는 활동을 선호합니다','정서적 유대를 중요하게 여깁니다'],
+  achievement:['목표 설정과 달성에서 보람을 느낍니다','배움과 성장에 적극적입니다','결과와 성과를 중요하게 여깁니다'],
+  contribution:['사회적 의미와 가치를 중시합니다','타인에게 도움이 될 때 만족감을 느낍니다','신념과 연결된 활동을 선호합니다']
+};
+const SENSE_CONCEPT = {
+  V:'시각적 정보와 아름다움에 민감하게 반응하는 정도',
+  A:'소리와 청각적 자극에 민감하게 반응하는 정도',
+  K:'몸의 움직임과 촉각적 경험을 중시하는 정도',
+  OG:'맛과 향 등 미각·후각적 경험을 중시하는 정도',
+  Ad:'생각을 정리하고 분석하는 내적 사고 과정을 중시하는 정도'
+};
+const SENSE_TRAITS = {
+  V:['공간과 분위기에 민감합니다','시각적 아름다움에서 만족을 얻습니다','사진·영상 등 기록을 즐깁니다'],
+  A:['소리와 음악에 민감하게 반응합니다','조용하거나 리듬감 있는 환경을 선호합니다','목소리와 어조를 예민하게 감지합니다'],
+  K:['몸을 움직일 때 에너지를 얻습니다','직접 체험하는 활동을 선호합니다','촉감과 신체적 편안함을 중시합니다'],
+  OG:['맛과 향에 예민하게 반응합니다','미식 경험에서 즐거움을 느낍니다','향기로 기분 전환을 합니다'],
+  Ad:['생각을 정리하는 시간을 선호합니다','논리적 분석과 사색을 즐깁니다','글쓰기·독서 등 내적 활동을 선호합니다']
+};
+function feedbackLevel(pct){
+  if(pct>=70) return '매우 높은';
+  if(pct>=40) return '뚜렷한';
+  return '비교적 낮은';
+}
+
+function renderResult(){
+  const values = FACTORS_PART1.map(function(f){
+    const s = factorScore(f.key);
+    return { key:f.key, label:f.label, icon:f.icon, raw:s.score, pct:normalizeScore(s.score) };
+  }).sort(function(a,b){ return b.raw - a.raw; });
+  const senses = FACTORS_PART2.map(function(f){
+    const s = factorScore(f.key);
+    return { key:f.key, label:f.label, icon:f.icon, raw:s.score, pct:normalizeScore(s.score) };
+  }).sort(function(a,b){ return b.raw - a.raw; });
+
+  const v1 = values[0], v2 = values[1];
+  const s1 = senses[0], s2 = senses[1];
+
+  const persona = PERSONA_TABLE[v1.key][s1.key];
+
+  function barsHtml(list, partClass){
+    return list.map(function(f, i){
+      const isTop = i===0;
+      return '<div class="factor-bar-item">'+
+        '<div class="factor-bar-top"><span class="label'+(isTop?' top':'')+'">'+f.icon+' '+f.label+(isTop?'<span class="badge '+partClass+'">1순위</span>':'')+'</span>'+
+        '<span class="value '+partClass+'">'+f.pct+'점</span></div>'+
+        '<div class="factor-bar-track '+partClass+'"><div class="factor-bar-fill '+partClass+'" style="width:'+f.pct+'%"></div></div>'+
+      '</div>';
+    }).join('');
+  }
+
+  const SHORT_VALUE = {freedom:'자유',variety:'변화',connection:'관계',achievement:'성취',contribution:'기여'};
+  const SHORT_SENSE = {V:'시각',A:'청각',K:'신체',OG:'미각후각',Ad:'사색'};
+
+  function formatPersonaName(name){
+    const m = name.match(/^(.+?)\((.+)\)$/);
+    if(m){
+      return m[1]+'<br><span class="persona-sub">('+m[2]+')</span>';
+    }
+    return name;
+  }
+
+  function stripParen(name){
+    return name.replace(/\(.+\)/,'').trim();
+  }
+
+  function matrixHtml(v1key, s1key){
+    let html = '<div class="matrix-wrap"><table class="persona-matrix"><thead><tr><th></th>';
+    FACTORS_PART2.forEach(function(sf){ html += '<th>'+SHORT_SENSE[sf.key]+'</th>'; });
+    html += '</tr></thead><tbody>';
+    FACTORS_PART1.forEach(function(vf){
+      html += '<tr><th>'+SHORT_VALUE[vf.key]+'</th>';
+      FACTORS_PART2.forEach(function(sf){
+        const cell = PERSONA_TABLE[vf.key][sf.key];
+        const isHit = (vf.key===v1key && sf.key===s1key);
+        html += '<td class="'+(isHit?'hit':'')+'">'+stripParen(cell.name)+'</td>';
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  const reportHtml =
+    '<div class="explainer-box">' +
+      '<p class="explainer-lead">본 진단 결과는 <b>어떤 방식으로 살아갈 때 가장 만족하는가</b>를 나타냅니다.</p>' +
+      '<ul class="explainer-list">' +
+        '<li><b>Core Values(동기)</b> — 나를 행동하게 만드는 동기는 무엇인가</li>' +
+        '<li><b>선호 감각환경</b> — 어떤 환경에서 충전되는가</li>' +
+        '<li><b>25가지 여가유형</b> — 어떤 경험에서 만족과 활력을 얻는가</li>' +
+      '</ul>' +
+    '</div>' +
+
+    '<div class="result-hero">'+v1.icon+s1.icon+'</div>' +
+    '<div class="result-label">가장 나답고 활력이 생기는 당신의 여가는</div>' +
+    '<div class="result-persona">'+formatPersonaName(persona.name)+'</div>' +
+
+    '<div class="combined-feedback-box">' +
+      '<div class="tip-title">🧩 종합 피드백</div>' +
+      '<p>당신은 <b>'+VALUE_TYPE_NAME[v1.key]+'</b> 동기를 가진 사람으로, '+VALUE_ACTION[v1.key]+' 만족감을 얻습니다. 그리고 그 만족은 <b>'+SENSE_TYPE_NAME[s1.key]+'</b> 감각을 통해, 즉 '+SENSE_ACTION[s1.key]+' 가장 크게 충전됩니다.</p>' +
+      '<p>다시 말해 <b>"왜 움직이는가"</b>는 '+VALUE_TYPE_NAME[v1.key]+'이고, <b>"어떻게 충전되는가"</b>는 '+SENSE_TYPE_NAME[s1.key]+'인 셈입니다. 이 둘이 만나 당신은 <b>'+persona.name+'</b> 유형이 되며, '+persona.activities.slice(0,3).join('·')+' 같은 활동을 할 때 가장 나답게 만족과 활력을 느낍니다.</p>' +
+      '<p class="feedback-score">📊 핵심가치(<b>'+SHORT_VALUE[v1.key]+'</b>) '+v1.pct+'점 · 선호감각(<b>'+SHORT_SENSE[s1.key]+'</b>) '+s1.pct+'점</p>' +
+      '<p class="feedback-tags">#'+VALUE_TYPE_NAME[v1.key].replace(/·/g,'')+' #'+SENSE_TYPE_NAME[s1.key].replace(/·/g,'')+' #'+stripParen(persona.name)+' #여가부캐진단</p>' +
+    '</div>' +
+
+    '<div class="persona-desc-box">' +
+      '<p class="desc-title">당신의 핵심가치는 "'+VALUE_TYPE_NAME[v1.key]+'"입니다</p>' +
+      '<p class="desc-concept"><b>개념</b> — '+VALUE_CONCEPT[v1.key]+'</p>' +
+      '<ul class="desc-traits">'+VALUE_TRAITS[v1.key].map(function(t){ return '<li>'+t+'</li>'; }).join('')+'</ul>' +
+      '<p class="desc-feedback">당신의 <b>'+v1.label+'</b> 점수는 <b>'+v1.pct+'점</b>으로 '+feedbackLevel(v1.pct)+' 편입니다. '+VALUE_ACTION[v1.key]+' 만족감을 얻는 사람이며, 또한 '+VALUE_TRAIT_PHRASE[v2.key]+'.</p>' +
+    '</div>' +
+    '<div class="persona-desc-box">' +
+      '<p class="desc-title">당신의 선호감각 환경은 "'+SENSE_TYPE_NAME[s1.key]+'"입니다</p>' +
+      '<p class="desc-concept"><b>개념</b> — '+SENSE_CONCEPT[s1.key]+'</p>' +
+      '<ul class="desc-traits">'+SENSE_TRAITS[s1.key].map(function(t){ return '<li>'+t+'</li>'; }).join('')+'</ul>' +
+      '<p class="desc-feedback">당신의 <b>'+s1.label+'</b> 점수는 <b>'+s1.pct+'점</b>으로 '+feedbackLevel(s1.pct)+' 편입니다. '+SENSE_ACTION[s1.key]+', '+SENSE_TRAIT_PHRASE[s2.key]+'.</p>' +
+    '</div>' +
+
+    '<div class="part-heading p1">Part 1 · NLP 핵심 여가 가치 (0~100점 환산)</div>' +
+    barsHtml(values, 'p1') +
+    '<div class="part-heading p2">Part 2 · 선호 감각환경 (0~100점 환산)</div>' +
+    barsHtml(senses, 'p2') +
+
+    '<div class="part-heading p3">Part 3. 가치 X 감각 매트릭스</div>' +
+    matrixHtml(v1.key, s1.key) +
+    '<div class="matrix-caption">세로축: NLP 핵심 여가 가치 · 가로축: 선호 감각환경 — 강조된 칸이 당신의 조합입니다</div>' +
+
+    '<div class="activity-box">' +
+      '<div class="tip-title">✨ 이런 활동을 추천해요</div>' +
+      '<div class="activity-chips">'+
+        persona.activities.map(function(a){ return '<span class="activity-chip">'+a+'</span>'; }).join('') +
+      '</div>' +
+    '</div>';
+
+  stage.innerHTML =
+    '<div class="result-topbar">' +
+      '<div><div class="result-kicker">🎭 여가 부캐 진단</div><div class="result-heading">나의 여가 부캐 결과예요</div></div>' +
+      '<button class="result-close" aria-label="닫기">✕</button>' +
+    '</div>' +
+    reportHtml +
+    '<div class="print-copyright">© 2026 세컨라이프 디자인. JMCARER. All rights reserved.</div>' +
+    '<div class="result-actions">' +
+      '<button class="result-btn" id="retryBtn">↻ 다시 진단하기</button>' +
+      '<div class="result-diag-row">' +
+        '<button class="result-btn primary" id="pdfBtn">🖨️ PDF로 저장하기</button>' +
+        '<button class="result-btn" id="previewBtn2">👁️ 요약페이지 미리보기</button>' +
+      '</div>' +
+      '<button class="result-btn" id="shareBtn">🔗 결과 공유하기</button>' +
+      '<div class="result-diag-row">' +
+        '<a href="expectancy-intro.html" class="result-btn primary" style="background:#C94764;">⏳ 기대수명 진단</a>' +
+        '<a href="lifedesign-intro.html" class="result-btn primary" style="background:#3E8F7D;">🧭 생애설계 진단</a>' +
+      '</div>' +
+      '<a href="index.html" class="result-btn">🏠 홈으로</a>' +
+    '</div>';
+
+  async function generateShareCard(){
+    try{
+      await document.fonts.load('64px "Nanum Brush Script"');
+      await document.fonts.load('600 20px Pretendard');
+    }catch(e){}
+
+    const PALETTES = {
+      freedom:{base:'#FCEEE3', blobs:['#F8C9A7','#F4A9A8','#D9C7E8']},
+      variety:{base:'#EAF2FB', blobs:['#B7D8F5','#C9B7F0','#F7C6DE']},
+      connection:{base:'#FDEDF1', blobs:['#F7B8C6','#F5D3A0','#E7B7E0']},
+      achievement:{base:'#EFF3FB', blobs:['#AFCBEF','#C9E4F0','#E3D6F5']},
+      contribution:{base:'#FFF4E3', blobs:['#F6D28A','#F3B27A','#F7E1A0']}
+    };
+    const pal = PALETTES[v1.key] || PALETTES.freedom;
+    const INK = '#2E241C';
+    const INK_SOFT = 'rgba(46,36,28,0.62)';
+
+    const W = 720, H = 1280;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // watercolor paper wash
+    ctx.fillStyle = pal.base;
+    ctx.fillRect(0,0,W,H);
+
+    function blob(cx,cy,r,color,alpha){
+      const g = ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+      g.addColorStop(0, color);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    blob(W*0.15, H*0.12, 320, pal.blobs[0], 0.55);
+    blob(W*0.85, H*0.28, 380, pal.blobs[1], 0.45);
+    blob(W*0.25, H*0.7, 400, pal.blobs[2], 0.4);
+    blob(W*0.8, H*0.85, 340, pal.blobs[0], 0.4);
+    blob(W*0.5, H*0.5, 460, pal.blobs[1], 0.22);
+
+    // subtle paper flecks
+    for(let i=0;i<70;i++){
+      const fx = Math.random()*W, fy = H*0.75 + Math.random()*H*0.25;
+      ctx.fillStyle = 'rgba(255,255,255,'+(0.15+Math.random()*0.25)+')';
+      ctx.beginPath(); ctx.arc(fx,fy,Math.random()*1.6+0.4,0,Math.PI*2); ctx.fill();
+    }
+
+    ctx.textAlign = 'center';
+
+    ctx.fillStyle = INK_SOFT;
+    ctx.font = '600 22px Pretendard, sans-serif';
+    ctx.fillText('여가 부캐 진단 · LEISURE IDENTITY', W/2, 100);
+
+    ctx.fillStyle = INK;
+    ctx.font = '500 26px Pretendard, sans-serif';
+    ctx.fillText('가장 나답고 활력이 생기는', W/2, 430);
+    ctx.fillText('당신의 여가는', W/2, 466);
+
+    const nameParts = persona.name.match(/^(.+?)\((.+)\)$/);
+    ctx.fillStyle = INK;
+    ctx.font = "80px 'Nanum Brush Script', cursive";
+    if(nameParts){
+      ctx.fillText(nameParts[1], W/2, 610);
+      ctx.font = "40px 'Nanum Brush Script', cursive";
+      ctx.fillStyle = INK_SOFT;
+      ctx.fillText('('+nameParts[2]+')', W/2, 660);
+    } else {
+      ctx.fillText(persona.name, W/2, 630);
+    }
+
+    ctx.font = '500 24px Pretendard, sans-serif';
+    ctx.fillStyle = INK_SOFT;
+    ctx.fillText(VALUE_TYPE_NAME[v1.key]+' · '+SENSE_TYPE_NAME[s1.key], W/2, 730);
+
+    ctx.font = '400 20px Pretendard, sans-serif';
+    ctx.fillStyle = INK_SOFT;
+    const acts = persona.activities.slice(0,3).join('  ·  ');
+    ctx.fillText(acts, W/2, 1000);
+
+    ctx.font = '600 20px Pretendard, sans-serif';
+    ctx.fillStyle = INK;
+    ctx.fillText('📊 핵심가치('+SHORT_VALUE[v1.key]+') '+v1.pct+'점 · 선호감각('+SHORT_SENSE[s1.key]+') '+s1.pct+'점', W/2, 1040);
+
+    ctx.font = '600 18px Pretendard, sans-serif';
+    ctx.fillStyle = '#B9741C';
+    ctx.fillText('#'+VALUE_TYPE_NAME[v1.key].replace(/·/g,'')+'  #'+SENSE_TYPE_NAME[s1.key].replace(/·/g,'')+'  #'+stripParen(persona.name), W/2, 1074);
+
+    ctx.strokeStyle = 'rgba(46,36,28,0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(W/2, 1170, 150, 40, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.font = '700 22px Pretendard, sans-serif';
+    ctx.fillStyle = INK;
+    ctx.fillText('🌿 세컨라이프 디자인', W/2, 1178);
+
+    ctx.font = '400 14px Pretendard, sans-serif';
+    ctx.fillStyle = 'rgba(46,36,28,0.45)';
+    ctx.fillText('© 2026 세컨라이프 디자인. JMCARER. All rights reserved.', W/2, 1250);
+
+    return canvas;
+  }
+
+  const LANDING_URL = 'index.html';
+
+  async function openShareCard(){
+    const canvas = await generateShareCard();
+    const dataUrl = canvas.toDataURL('image/png');
+    const overlay = document.createElement('div');
+    overlay.className = 'preview-overlay';
+    overlay.innerHTML =
+      '<div class="preview-sheet share-sheet">' +
+        '<div class="preview-topbar">' +
+          '<span>🔗 결과 공유 카드</span>' +
+          '<button class="preview-close" id="shareClose">✕</button>' +
+        '</div>' +
+        '<img src="'+dataUrl+'" class="share-card-img" alt="여가 부캐 결과 카드">' +
+        '<a href="'+dataUrl+'" download="여가부캐-'+persona.name.replace(/[()]/g,'')+'.png" class="result-btn primary preview-print-btn" id="shareDownloadBtn">⬇️ 이미지 다운로드</a>' +
+        '<button class="result-btn share-link-btn" id="shareLinkBtn">🔗 진단 링크 복사하기</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('#shareClose').addEventListener('click', function(){ overlay.remove(); });
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+    overlay.querySelector('#shareLinkBtn').addEventListener('click', function(){
+      navigator.clipboard.writeText(LANDING_URL).then(function(){
+        overlay.querySelector('#shareLinkBtn').textContent = '✅ 링크가 복사되었어요';
+      });
+    });
+
+    if(navigator.share){
+      canvas.toBlob(function(blob){
+        const file = new File([blob], 'leisure-persona.png', {type:'image/png'});
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          const shareBtnEl = document.createElement('button');
+          shareBtnEl.className = 'result-btn preview-print-btn';
+          shareBtnEl.textContent = '📤 바로 공유하기';
+          shareBtnEl.addEventListener('click', function(){
+            navigator.share({
+              files:[file],
+              title:'나의 여가 부캐',
+              text:'나의 여가 부캐는 '+persona.name+'! 세컨라이프 디자인에서 나도 확인해보기: '+LANDING_URL,
+              url: LANDING_URL
+            });
+          });
+          overlay.querySelector('.preview-sheet').appendChild(shareBtnEl);
+        }
+      });
+    }
+  }
+
+  function openSummaryPreview(){
+    const overlay = document.createElement('div');
+    overlay.className = 'preview-overlay';
+    overlay.innerHTML =
+      '<div class="preview-sheet">' +
+        '<div class="preview-topbar">' +
+          '<span>👁️ 요약페이지 미리보기</span>' +
+          '<button class="preview-close" id="previewClose">✕</button>' +
+        '</div>' +
+        '<div class="preview-compact">'+reportHtml+'</div>' +
+        '<div class="preview-copyright">© 2026 세컨라이프 디자인. JMCARER. All rights reserved.</div>' +
+        '<button class="result-btn primary preview-print-btn" id="previewPrintBtn">🖨️ 지금 PDF로 저장하기</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('#previewClose').addEventListener('click', function(){ overlay.remove(); });
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) overlay.remove(); });
+    overlay.querySelector('#previewPrintBtn').addEventListener('click', function(){ window.print(); });
+  }
+
+  stage.querySelector('#pdfBtn').addEventListener('click', function(){ window.print(); });
+  stage.querySelector('#previewBtn2').addEventListener('click', openSummaryPreview);
+  stage.querySelector('#shareBtn').addEventListener('click', openShareCard);
+  stage.querySelector('#retryBtn').addEventListener('click', function(){
+    state = { step:1, answers:{} };
+    goto(1);
+  });
+}
+
+backBtn.addEventListener('click', function(){ if(state.step>1) goto(state.step-1); });
+goto(1);
+if(new URLSearchParams(location.search).get('preview')==='1'){ previewBtn.click(); }
+</script>
+
+<div class="site-footer">© 2026 세컨라이프 디자인. JMCARER. All rights reserved.</div>
+
+</body>
+</html>
